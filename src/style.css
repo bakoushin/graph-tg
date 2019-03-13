@@ -1,28 +1,62 @@
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
 #root {
   position: relative;
   overflow: hidden;
 }
+
 .slider--frame {
   position: absolute;
   left: 0;
   top: 0;
   width: 100px;
   height: 100%;
-  border: 2px solid rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0px 0px 0px 2px rgba(0, 0, 0, 0.4);
   will-change: transform;
 }
 .slider--frame::before,
 .slider--frame::after {
   content: '';
   position: absolute;
+  top: 0;
+  left: 100;
   height: 100%;
   width: 100vw;
   background-color: rgba(0, 0, 0, 0.25);
-  top: 0;
+  pointer-events: none;
 }
 .slider--frame::before {
   left: 100%;
 }
 .slider--frame::after {
   right: 100%;
+}
+.slider--control {
+  position: absolute;
+  top: 0;
+  width: 48px;
+  height: 100%;
+}
+.slider--control__left {
+  left: 0;
+  transform: translateX(-50%);
+  outline: 1px solid lightseagreen;
+}
+.slider--control__right {
+  right: 0;
+  transform: translateX(50%);
+  outline: 1px solid salmon;
+}
+
+/* DEBUG */
+
+.slider--control__left {
+  outline: 1px solid lightseagreen;
+}
+.slider--control__right {
+  outline: 1px solid salmon;
 }
