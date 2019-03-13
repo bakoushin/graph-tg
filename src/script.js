@@ -1,4 +1,4 @@
-import dataset from './spec/chart_data.json';
+import dataset from '../spec/chart_data.json';
 const { colors, columns, names, types } = dataset[0];
 const data = columns.slice(1);
 

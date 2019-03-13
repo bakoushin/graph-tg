@@ -10,11 +10,8 @@
       "name": "Launch Chrome",
       "url": "http://localhost:1234",
       "webRoot": "${workspaceFolder}",
-      "trace": true,
-      "breakOnLoad": true,
-      "sourceMaps": true,
       "sourceMapPathOverrides": {
-        "*": "${webRoot}/*"
+        "*": "${webRoot}/src/*"
       }
     },
     {
@@ -23,9 +20,8 @@
       "name": "Attach to Chrome",
       "port": 9222,
       "webRoot": "${workspaceFolder}",
-      "sourceMaps": true,
       "sourceMapPathOverrides": {
-        "*": "${webRoot}"
+        "*": "${webRoot}/src/*"
       }
     }
   ]
