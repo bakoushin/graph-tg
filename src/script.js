@@ -12,30 +12,46 @@ const svg = document.getElementById('svg');
 svg.style.outline = '1px solid #ccc';
 //
 
-data.forEach(c => renderSparkline(c.slice(1), svg));
+renderSparklines(data, svg);
 
-function renderSparkline(data, element) {
+function renderSparklines(data, element) {
   const { width, height } = element.getBoundingClientRect();
   const normalizedData = normalizeData(data, height);
 
-  const polyline = document.createElementNS(SVG_NS, 'polyline');
-  polyline.style = 'fill:none;stroke:#666;stroke-width:1;';
+  for (const col of normalizedData) {
+    const polyline = document.createElementNS(SVG_NS, 'polyline');
+    polyline.style = 'fill:none;stroke:#666;stroke-width:1;';
 
-  normalizedData.forEach((item, index) => {
-    const point = element.createSVGPoint();
-    point.x = index * (width / (normalizedData.length - 1));
-    point.y = item;
-    polyline.points.appendItem(point);
-  });
+    col.forEach((n, index) => {
+      const point = element.createSVGPoint();
+      point.x = index * (width / (col.length - 1));
+      point.y = n;
+      polyline.points.appendItem(point);
+    });
 
-  element.appendChild(polyline);
+    element.appendChild(polyline);
+  }
 }
 
 function normalizeData(data, normalizedInterval) {
-  const min = Math.min(...data);
-  const max = Math.max(...data);
+  const onlyNumbers = data.map(col =>
+    col.filter(n => !Number.isNaN(Number(n)))
+  );
+
+  const allData = onlyNumbers.reduce((all, col) => {
+    all.push(...col);
+    return all;
+  });
+
+  const min = Math.min(...allData);
+  const max = Math.max(...allData);
   const interval = max - min;
-  return data.map(v => ((v - min) / interval) * normalizedInterval);
+
+  const normalizedData = onlyNumbers.map(col =>
+    col.map(n => ((n - min) / interval) * normalizedInterval)
+  );
+
+  return normalizedData;
 }
 
 //const svg = document.createElementNS(SVG_NS, 'svg');
