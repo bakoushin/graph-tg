@@ -12,11 +12,16 @@ const svg = document.getElementById('svg');
 svg.style.outline = '1px solid #ccc';
 //
 
-renderSparklines(data, svg);
+//renderSparklines(data, svg);
+const sparklines = renderSparklines([[1, 10, 2, 8, 3, 5, 7]], svg);
+
+console.log(sparklines);
 
 function renderSparklines(data, element) {
   const { width, height } = element.getBoundingClientRect();
   const normalizedData = normalizeData(data, height);
+
+  let sparklines = [];
 
   for (const col of normalizedData) {
     const polyline = document.createElementNS(SVG_NS, 'polyline');
@@ -30,7 +35,11 @@ function renderSparklines(data, element) {
     });
 
     element.appendChild(polyline);
+
+    sparklines.push(polyline);
   }
+
+  return sparklines;
 }
 
 function normalizeData(data, normalizedInterval) {
@@ -52,6 +61,66 @@ function normalizeData(data, normalizedInterval) {
   );
 
   return normalizedData;
+}
+
+animateJS([0, 1, 0, 1, 0, 1, 0], sparklines[0]);
+
+function animateJS(data, sparkline) {
+  const duration = 1000; // ms
+  const animationData = data.map((n, i) => {
+    const diff = n - sparkline.points[i].y;
+    const step = (diff / duration) * 20;
+    return { n, step };
+  });
+
+  console.log(animationData);
+  animate();
+  function animate() {
+    let continueAnimation = false;
+    for (let i = 0; i < animationData.length; i++) {
+      if (sparkline.points[i].y !== animationData[i].n) {
+        let n = sparkline.points[i].y + animationData[i].step;
+        if (animationData[i].step > 0) {
+          n = Math.min(animationData[i].n, n);
+        } else if (animationData[i].step < 0) {
+          n = Math.max(animationData[i].n, n);
+          // console.log(animationData[i].n, n);
+        }
+        // console.log(n, sparkline.points[i].y, animationData[i].step);
+        sparkline.points[i].y = n;
+        continueAnimation = true;
+      }
+    }
+    if (continueAnimation) {
+      requestAnimationFrame(animate);
+    }
+  }
+  console.log('ssss', sparkline.points[1], sparkline.points.length);
+}
+
+// animateChange([0, 1, 0, 1, 0, 1, 0], sparklines[0]);
+// animateChange([10, 1, 10, 1, 10, 1, 10], sparklines[0]);
+
+function animateChange(data, sparkline) {
+  const { width, height } = svg.getBoundingClientRect();
+
+  const points = data
+    .map((n, index) => {
+      const x = index * (width / (data.length - 1));
+      const y = n;
+      return `${x},${y}`;
+    })
+    .join(' ');
+
+  const animate = document.createElementNS(SVG_NS, 'animate');
+  animate.setAttribute('attributeName', 'points');
+  animate.setAttribute('attributeType', 'XML');
+  animate.setAttribute('to', points);
+  animate.setAttribute('dur', '1s');
+  animate.setAttribute('repeatCount', '1');
+  animate.setAttribute('fill', 'freeze');
+  sparkline.appendChild(animate);
+  animate.beginElement();
 }
 
 //const svg = document.createElementNS(SVG_NS, 'svg');
