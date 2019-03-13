@@ -99,17 +99,18 @@ const sliderControlRight = document.querySelector('.slider--control__right');
 sliderControlRight.onpointerdown = e => {
   isMoving = true;
   pointerPosition = e.clientX;
-  sliderWidth = e.target.clientWidth;
+  sliderWidth = slider.clientWidth;
   rootWidth = root.clientWidth;
   e.target.setPointerCapture(e.pointerId);
-  console.log('left down', pointerPosition, sliderPosition);
+  console.log('left down', pointerPosition, sliderPosition, sliderWidth);
 };
 sliderControlRight.onpointermove = e => {
   if (!isMoving) return;
 
   const diff = e.clientX - pointerPosition;
   sliderWidth += diff;
-  const scale = sliderWidth / initialSliderWidth;
+  // const scale = sliderWidth / initialSliderWidth;
+  // console.log(sliderWidth, initialSliderWidth, scale);
   // sliderPosition = diff;
 
   // if (sliderPosition < 0) sliderPosition = 0;
@@ -118,10 +119,10 @@ sliderControlRight.onpointermove = e => {
 
   requestAnimationFrame(() => {
     slider.style.transformOrigin = 'left';
-    slider.style.transform = `scaleX(${scale})`;
-    //slider.style.width = `${sliderWidth}px`;
+    // slider.style.transform = `scaleX(${scale})`;
+    slider.style.width = `${sliderWidth}px`;
     // slider.style.transform = `translateX(${sliderPosition}px)`;
-    console.log(slider.getBoundingClientRect().width);
+    console.log('width', sliderWidth, slider.getBoundingClientRect().width);
   });
 
   console.log('left move', pointerPosition, sliderPosition);
