@@ -66,9 +66,13 @@ class Polyline {
   }
   show() {
     //opacity +
+    console.log('show');
+    this._polyline.style.opacity = 1;
   }
   hide() {
     // opacity -
+    console.log('hide');
+    this._polyline.style.opacity = 0;
   }
   animateChange() {
     // renormalize visible paths and animate it
