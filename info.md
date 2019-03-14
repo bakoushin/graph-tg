@@ -6,3 +6,17 @@ https://stackoverflow.com/questions/25706565/how-do-i-add-coordinates-to-an-svg-
 https://stackoverflow.com/questions/33811183/javascript-morph-animate-svg-path-data-without-smil-or-libraries
 
 https://stackoverflow.com/questions/33420323/how-to-animate-path-shape-without-using-smil
+
+Init
+
+- draw polylines
+- store references to polylines
+
+Hide/Show polyline
+
+- for Sparkline
+  - animate hiding polyline (stored)
+  - animate recalculating polyline (stored)
+- for Main graph
+  - animate hiding polyline (stored)
+  - animate recalculating polyline (stored)
