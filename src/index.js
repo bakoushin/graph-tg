@@ -1,3 +1,4 @@
+import './style.css';
 import Sparkline from './Sparkline/Sparkline';
 import dataset from '../spec/chart_data.json';
 const { colors, columns, names, types } = dataset[0];

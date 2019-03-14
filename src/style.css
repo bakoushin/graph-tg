@@ -9,6 +9,10 @@
   overflow: hidden;
 }
 
+svg {
+  display: block;
+}
+
 .slider--frame {
   position: absolute;
   left: 0;

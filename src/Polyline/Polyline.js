@@ -28,6 +28,12 @@ class Polyline {
   update(points) {
     this._points = points;
     // animate change in points
+    requestAnimationFrame(() => {
+      this._points.forEach(([x, y], index) => {
+        this._polyline.points[index].x = x;
+        this._polyline.points[index].y = y;
+      });
+    });
   }
   show() {
     //opacity +
