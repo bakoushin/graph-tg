@@ -13,17 +13,25 @@ const y0 = document.getElementById('y0');
 const y1 = document.getElementById('y1');
 
 y0.addEventListener('change', e => {
+  const data = sparkline._data['y0'];
   if (e.target.checked) {
-    sparkline._polylines[0].polyline.show();
+    data.visible = true;
+    data.polyline.show();
   } else {
-    sparkline._polylines[0].polyline.hide();
+    data.visible = false;
+    data.polyline.hide();
   }
+  sparkline.onResize();
 });
 
 y1.addEventListener('change', e => {
+  const data = sparkline._data['y1'];
   if (e.target.checked) {
-    sparkline._polylines[1].polyline.show();
+    data.visible = true;
+    data.polyline.show();
   } else {
-    sparkline._polylines[1].polyline.hide();
+    data.visible = false;
+    data.polyline.hide();
   }
+  sparkline.onResize();
 });
