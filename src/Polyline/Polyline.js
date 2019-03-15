@@ -25,6 +25,16 @@ class Polyline {
 
     this._svg.appendChild(this._polyline);
   }
+  add(points) {
+    points.reverse().forEach(([x, y]) => {
+      this._points.unshift([x, y]);
+
+      const point = this._svg.createSVGPoint();
+      point.x = 0;
+      point.y = y;
+      this._polyline.points.insertItemBefore(point, 0);
+    });
+  }
   update(points) {
     if (this._rafId) {
       cancelAnimationFrame(this._rafId);

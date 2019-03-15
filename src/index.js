@@ -35,3 +35,38 @@ y1.addEventListener('change', e => {
   }
   sparkline.onResize();
 });
+
+const add = document.getElementById('add');
+add.addEventListener('click', () => {
+  const data = [
+    37,
+    20,
+    32,
+    39,
+    32,
+    35,
+    19,
+    65,
+    36,
+    62,
+    113,
+    69,
+    120,
+    60,
+    51,
+    49,
+    71,
+    122,
+    149
+  ];
+
+  const newPoints = sparkline.calculatePoints(data);
+
+  sparkline._data['y0'].data = [...data, ...sparkline._data['y0'].data];
+  const allPoints = sparkline.calculatePoints(sparkline._data['y0'].data);
+
+  sparkline._data['y0'].polyline.add(newPoints);
+  sparkline._data['y0'].polyline.update(allPoints);
+  // sparkline._data['y0'].data = [...data, ...sparkline._data['y0'].data];
+  // sparkline.onResize();
+});
