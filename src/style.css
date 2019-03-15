@@ -9,7 +9,7 @@
   overflow: hidden;
 }
 
-svg {
+svg.graph {
   display: block;
   transform: scaleY(-1);
 }

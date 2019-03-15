@@ -82,6 +82,8 @@ class Slider {
           this.slider.style.width = `${this.sliderWidth}px`;
           this.slider.style.transform = `translateX(${this.sliderPosition}px)`;
           this.rightSideRAFInProgress = false;
+
+          this.handleChange();
         });
       }
     } else if (e.target === this.leftSide) {
@@ -94,7 +96,7 @@ class Slider {
           if (this.sliderPosition < 0) this.sliderPosition = 0;
 
           this.sliderWidth -= pointerX - this.pointerPosition;
-          console.log(pointerX - this.pointerPosition);
+          // console.log(pointerX - this.pointerPosition);
 
           if (this.sliderWidth < MIN_SLIDER_WIDTH)
             this.sliderWidth = MIN_SLIDER_WIDTH;
@@ -102,12 +104,14 @@ class Slider {
           if (this.sliderPosition + this.sliderWidth > this.parentWidth)
             this.sliderPosition = this.parentWidth - this.sliderWidth;
 
-          console.log(pointerX);
+          // console.log(pointerX);
           this.pointerPosition = pointerX;
 
           this.slider.style.width = `${this.sliderWidth}px`;
           this.slider.style.transform = `translateX(${this.sliderPosition}px)`;
           this.leftSideRAFInProgress = false;
+
+          this.handleChange();
         });
       }
     } else {
@@ -123,12 +127,25 @@ class Slider {
 
           this.slider.style.transform = `translateX(${this.sliderPosition}px)`;
           this.moveRAFInProgress = false;
+
+          // this.handleChange();
         });
       }
     }
   }
   getPointerX(e) {
     return e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+  }
+  onChange(callback) {
+    this.changeCallback = callback;
+  }
+  handleChange() {
+    if (!this.changeCallback) return;
+
+    this.changeCallback([
+      this.sliderPosition,
+      this.sliderPosition + this.sliderWidth
+    ]);
   }
 }
 
