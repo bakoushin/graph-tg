@@ -46,21 +46,25 @@ class Polyline {
     const duration = 1000;
 
     const diff = this._points.map(([x, y], index) => {
-      const diffX = x - this._polyline.points[index].x;
-      const diffY = y - this._polyline.points[index].y;
+      const diffX = x - this._polyline.points.getItem(index).x;
+      const diffY = y - this._polyline.points.getItem(index).y;
       return [diffX, diffY];
     });
 
-    const initialPoints = Array.from(this._polyline.points).map(({ x, y }) => {
-      return { x, y };
-    });
+    const initialPoints = [];
+    for (let i = 0; i < this._polyline.points.numberOfItems; i++) {
+      const { x, y } = this._polyline.points.getItem(i);
+      initialPoints.push({ x, y });
+    }
 
     const animate = now => {
       const elapsed = now - start;
       const progress = Math.min(1, elapsed / duration);
       diff.forEach(([x, y], index) => {
-        this._polyline.points[index].x = initialPoints[index].x + x * progress;
-        this._polyline.points[index].y = initialPoints[index].y + y * progress;
+        this._polyline.points.getItem(index).x =
+          initialPoints[index].x + x * progress;
+        this._polyline.points.getItem(index).y =
+          initialPoints[index].y + y * progress;
       });
       if (progress < 1) {
         this._rafId = requestAnimationFrame(animate);
