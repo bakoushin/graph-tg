@@ -17,6 +17,11 @@ svg.graph {
   /* transform: scaleY(-1); */
 }
 
+.label {
+  text-anchor: middle;
+  will-change: transform;
+}
+
 h2 {
   margin: 0;
   padding: 0;

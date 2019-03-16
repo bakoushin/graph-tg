@@ -13,6 +13,23 @@ const sparkline = new Sparkline(svg, data);
 const graph = document.getElementById('graph');
 const graphLine = new Polyline(graph, [[0, 0]]);
 
+// draw labels
+const textElements = [];
+for (const label of labels) {
+  const dateStr = dateString(label);
+
+  const text = document.createElementNS(graph.namespaceURI, 'text');
+  text.setAttribute('x', '-100');
+  text.setAttribute('y', '100%');
+  text.classList.add('label');
+  const textNode = document.createTextNode(dateStr);
+  text.appendChild(textNode);
+  graph.appendChild(text);
+  textElements.push(text);
+}
+
+// -- end -- draw labels
+
 let cachedMax, cachedMin, graphData;
 let spread = 0;
 let spreadDiff = 0;
@@ -59,32 +76,6 @@ function drawGraph([start, end]) {
 
       startAnimateY();
     }
-    graph.querySelectorAll('text').forEach(node => node.remove())
-
-    const LABEL_WIDTH = 80;
-    const graphLabels = labels.slice(startIndex, endIndex);
-    console.log(graphLabels.map(dateString));
-    const labelCount = Math.floor(width / LABEL_WIDTH);
-    for (let i = 0; i < labelCount; i++) {
-      const index = Math.floor(
-        ((graphLabels.length - 1) / (labelCount - 1)) * i
-      );
-      // console.log(index, graphLabels.length);
-      const dateStr = dateString(graphLabels[index]);
-
-      let textAnchor = 'middle';
-      if (i === 0) textAnchor = 'start';
-      else if (i === labelCount - 1) textAnchor = 'end';
-
-      const text = document.createElementNS(graph.namespaceURI, 'text');
-      text.setAttribute('x', (width / (labelCount - 1)) * i);
-      text.setAttribute('y', '100%');
-      text.setAttribute('style', `text-anchor: ${textAnchor}`);
-      // text.setAttribute('transform', 'scale(1,-1)');
-      const textNode = document.createTextNode(dateStr);
-      text.appendChild(textNode);
-      graph.appendChild(text);
-    }
 
     const elapsedTime = now - animationStart;
     const progress = Math.min(1, elapsedTime / duration);
@@ -98,6 +89,15 @@ function drawGraph([start, end]) {
     });
 
     graphLine.setPoints(graphPoints);
+
+    for (const text of textElements) {
+      text.removeAttribute('style');
+    }
+    graphPoints.forEach((point, index) => {
+      const text = textElements[index];
+      text.setAttribute('style', `transform: translateX(${100 + point[0]}px)`);
+      // text.style.tansform = `translateX(${point.x}px)`;
+    });
   });
 }
 
