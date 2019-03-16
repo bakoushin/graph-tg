@@ -2,5 +2,5 @@
   fill: none;
   stroke: #000;
   stroke-width: 1;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s linear;
 }

@@ -23,7 +23,10 @@ let duration = 1000;
 let currentSpread = 0;
 
 const slider = new Slider(document.querySelector('.slider'));
-slider.onChange(([start, end]) => {
+slider.onChange(drawGraph);
+drawGraph(slider.position);
+
+function drawGraph([start, end]) {
   requestAnimationFrame(now => {
     const points = sparkline._data['y0'].polyline.points;
     const data = sparkline._data['y0'].data;
@@ -69,7 +72,7 @@ slider.onChange(([start, end]) => {
 
     graphLine.setPoints(graphPoints);
   });
-});
+}
 
 function startAnimateY() {
   const { width, height } = graph.getBoundingClientRect();
@@ -107,9 +110,13 @@ y0.addEventListener('change', e => {
   if (e.target.checked) {
     data.visible = true;
     data.polyline.show();
+    graphLine.show();
+    graphLine.updatePoints(graphLine.points.map(([x, y]) => [x, y / 10]), 500);
   } else {
     data.visible = false;
     data.polyline.hide();
+    graphLine.hide();
+    graphLine.updatePoints(graphLine.points.map(([x, y]) => [x, y * 10]), 1000);
   }
   sparkline.onResize();
 });

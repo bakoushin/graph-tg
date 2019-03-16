@@ -22,7 +22,7 @@ class Polyline {
       this.polyline.points.appendItem(point);
     }
   }
-  updatePoints(points) {
+  updatePoints(points, duration = 1000) {
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
     }
@@ -30,7 +30,6 @@ class Polyline {
     this.points = [...points];
     // animate change in points
     const start = performance.now();
-    const duration = 1000;
 
     const diff = this.points.map(([x, y], index) => {
       const diffX = x - this.polyline.points.getItem(index).x;
@@ -69,11 +68,13 @@ class Polyline {
     //opacity +
     console.log('show');
     this.polyline.style.opacity = 1;
+    this.polyline.style.transition = 'opacity 1s linear';
   }
   hide() {
     // opacity -
     console.log('hide');
     this.polyline.style.opacity = 0;
+    this.polyline.style.transition = 'opacity 0.3s linear';
   }
   animateChange() {
     // renormalize visible paths and animate it

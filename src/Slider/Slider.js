@@ -9,6 +9,7 @@ class Slider {
     this.rightSide = this.slider.querySelector('.slider__side--right');
 
     this.sliderPosition = 0;
+    this.sliderWidth = this.slider.clientWidth;
     this.isMoving = false;
 
     this.handleInteractionStart = this.handleInteractionStart.bind(this);
@@ -128,7 +129,7 @@ class Slider {
           this.slider.style.transform = `translateX(${this.sliderPosition}px)`;
           this.moveRAFInProgress = false;
 
-          // this.handleChange();
+          this.handleChange();
         });
       }
     }
@@ -142,10 +143,10 @@ class Slider {
   handleChange() {
     if (!this.changeCallback) return;
 
-    this.changeCallback([
-      this.sliderPosition,
-      this.sliderPosition + this.sliderWidth
-    ]);
+    this.changeCallback(this.position);
+  }
+  get position() {
+    return [this.sliderPosition, this.sliderPosition + this.sliderWidth];
   }
 }
 
