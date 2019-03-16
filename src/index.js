@@ -5,6 +5,7 @@ import Slider from './Slider/Slider';
 import dataset from '../spec/chart_data.json';
 const { colors, columns, names, types } = dataset[0];
 const data = columns.slice(1);
+const labels = columns[0].slice(1);
 
 const svg = document.getElementById('svg');
 const sparkline = new Sparkline(svg, data);
@@ -40,9 +41,9 @@ function drawGraph([start, end]) {
 
     // console.log(startValue, endValue, data[0], data[data.length - 1]);
 
-    graphData = data.slice(startIndex, endIndex);
-
     const { width, height } = graph.getBoundingClientRect();
+
+    graphData = data.slice(startIndex, endIndex);
 
     const min = Math.min(...graphData);
     const max = Math.max(...graphData);
@@ -57,6 +58,32 @@ function drawGraph([start, end]) {
       animationStart = performance.now();
 
       startAnimateY();
+    }
+    graph.querySelectorAll('text').forEach(node => node.remove())
+
+    const LABEL_WIDTH = 80;
+    const graphLabels = labels.slice(startIndex, endIndex);
+    console.log(graphLabels.map(dateString));
+    const labelCount = Math.floor(width / LABEL_WIDTH);
+    for (let i = 0; i < labelCount; i++) {
+      const index = Math.floor(
+        ((graphLabels.length - 1) / (labelCount - 1)) * i
+      );
+      // console.log(index, graphLabels.length);
+      const dateStr = dateString(graphLabels[index]);
+
+      let textAnchor = 'middle';
+      if (i === 0) textAnchor = 'start';
+      else if (i === labelCount - 1) textAnchor = 'end';
+
+      const text = document.createElementNS(graph.namespaceURI, 'text');
+      text.setAttribute('x', (width / (labelCount - 1)) * i);
+      text.setAttribute('y', '100%');
+      text.setAttribute('style', `text-anchor: ${textAnchor}`);
+      // text.setAttribute('transform', 'scale(1,-1)');
+      const textNode = document.createTextNode(dateStr);
+      text.appendChild(textNode);
+      graph.appendChild(text);
     }
 
     const elapsedTime = now - animationStart;
@@ -100,6 +127,13 @@ function startAnimateY() {
       requestAnimationFrame(animateY);
     }
   }
+}
+
+function dateString(date) {
+  return new Date(date).toLocaleDateString('en', {
+    month: 'short',
+    day: 'numeric'
+  });
 }
 
 const y0 = document.getElementById('y0');
