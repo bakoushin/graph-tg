@@ -48,7 +48,7 @@ class Sparkline {
     for (const { data, polyline, visible } of polylines) {
       if (!visible) continue;
       const points = this.calculatePoints(data);
-      polyline.update(points);
+      polyline.updatePoints(points);
     }
   }
   onDataChange(data) {

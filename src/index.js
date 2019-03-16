@@ -12,41 +12,92 @@ const sparkline = new Sparkline(svg, data);
 const graph = document.getElementById('graph');
 const graphLine = new Polyline(graph, [[0, 0]]);
 
+let cachedMax, cachedMin, graphData;
+let spread = 0;
+let spreadDiff = 0;
+
+let animationStart;
+
+let duration = 1000;
+
+let currentSpread = 0;
+
 const slider = new Slider(document.querySelector('.slider'));
 slider.onChange(([start, end]) => {
-  const points = sparkline._data['y0'].polyline._points;
-  const data = sparkline._data['y0'].data;
+  requestAnimationFrame(now => {
+    const points = sparkline._data['y0'].polyline.points;
+    const data = sparkline._data['y0'].data;
 
-  const startIndex = points.findIndex(p => p[0] >= start);
-  const endIndex =
-    points.length - [...points].reverse().findIndex(p => p[0] <= end) - 1;
+    const startIndex = points.findIndex(p => p[0] >= start);
+    const endIndex =
+      points.length - [...points].reverse().findIndex(p => p[0] <= end) - 1;
 
-  // const startValue = data[startIndex];
-  // const endValue = data[endIndex];
+    // const startValue = data[startIndex];
+    // const endValue = data[endIndex];
 
-  // console.log(startValue, endValue, data[0], data[data.length - 1]);
+    // console.log(startValue, endValue, data[0], data[data.length - 1]);
 
-  const graphData = data.slice(startIndex, endIndex);
+    graphData = data.slice(startIndex, endIndex);
 
-  const { width, height } = graph.getBoundingClientRect();
+    const { width, height } = graph.getBoundingClientRect();
 
-  const min = Math.min(...graphData);
-  const max = Math.max(...graphData);
-  const spread = max - min;
+    const min = Math.min(...graphData);
+    const max = Math.max(...graphData);
 
-  const graphPoints = graphData.map((n, index) => {
-    const y = ((n - min) / spread) * height;
-    const x = index * (width / (graphData.length - 1));
-    return [x, y];
-  });
+    if (min !== cachedMin || max !== cachedMax) {
+      cachedMin = min;
+      cachedMax = max;
 
-  requestAnimationFrame(() => {
-    graphLine._polyline.setAttribute(
-      'points',
-      graphPoints.map(([x, y]) => `${x},${y}`).join(' ')
-    );
+      spread = max - min;
+      spreadDiff = spread - currentSpread;
+
+      animationStart = performance.now();
+
+      startAnimateY();
+    }
+
+    const elapsedTime = now - animationStart;
+    const progress = Math.min(1, elapsedTime / duration);
+
+    currentSpread = spread - spreadDiff * (1 - progress);
+
+    const graphPoints = graphData.map((n, index) => {
+      const y = ((n - min) / currentSpread) * height;
+      const x = index * (width / (graphData.length - 1));
+      return [x, y];
+    });
+
+    graphLine.setPoints(graphPoints);
   });
 });
+
+function startAnimateY() {
+  const { width, height } = graph.getBoundingClientRect();
+
+  requestAnimationFrame(animateY);
+
+  function animateY(now) {
+    const min = cachedMin;
+    const max = cachedMax;
+
+    const elapsedTime = now - animationStart;
+    const progress = Math.min(1, elapsedTime / duration);
+
+    currentSpread = spread - spreadDiff * (1 - progress);
+
+    const graphPoints = graphData.map((n, index) => {
+      const y = ((n - min) / currentSpread) * height;
+      const x = index * (width / (graphData.length - 1));
+      return [x, y];
+    });
+
+    graphLine.setPoints(graphPoints);
+
+    if (progress < 1) {
+      requestAnimationFrame(animateY);
+    }
+  }
+}
 
 const y0 = document.getElementById('y0');
 const y1 = document.getElementById('y1');

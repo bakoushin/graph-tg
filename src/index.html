@@ -8,18 +8,23 @@
     <!-- <link rel="stylesheet" href="style.css" /> -->
   </head>
   <body>
-    <div id="root">
-      <svg id="svg" class="graph" height="50px" width="100%"></svg>
-      <div class="slider">
-        <div class="slider__side slider__side--left"></div>
-        <div class="slider__side slider__side--right"></div>
+    <section>
+      <h2>Followers</h2>
+      <div style="width: 100%; padding-bottom: 90%; position: relative;">
+        <svg id="graph" class="graph"></svg>
       </div>
-    </div>
-    <svg id="graph" class="graph" height="100px" width="100%"></svg>
-    <div>
-      <label for="y0">y0</label>
-      <input type="checkbox" checked name="y0" id="y0" />
-    </div>
+      <div id="root" style="position: relative; height: 50px;">
+        <svg id="svg" class="graph"></svg>
+        <div class="slider">
+          <div class="slider__side slider__side--left"></div>
+          <div class="slider__side slider__side--right"></div>
+        </div>
+      </div>
+      <div>
+        <label for="y0">y0</label>
+        <input type="checkbox" checked name="y0" id="y0" />
+      </div>
+    </section>
     <div>
       <label for="y1">y1</label>
       <input type="checkbox" checked name="y1" id="y1" />
