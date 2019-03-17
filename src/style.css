@@ -74,6 +74,27 @@ svg.graph {
   transition: opacity 0.3s linear;
 }
 
+.day {
+  will-change: transform;
+  opacity: 0;
+}
+
+.day:hover {
+  opacity: 1;
+}
+
+.day__line {
+  stroke: #666;
+  stroke-width: 1px;
+}
+
+.day__point {
+  stroke: black;
+  stroke-width: 2px;
+  fill: white;
+  will-change: transform;
+}
+
 h2 {
   margin: 0;
   padding: 0;

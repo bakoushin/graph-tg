@@ -29,8 +29,29 @@ for (const label of labels) {
   graph.appendChild(text);
   textElements.push(text);
 }
-
 // -- end -- draw labels
+
+// draw circles
+const days = [];
+for (let i = 0; i < labels.length; i++) {
+  const group = document.createElementNS(graph.namespaceURI, 'g');
+  group.classList.add('day');
+
+  const verticalLine = document.createElementNS(graph.namespaceURI, 'line');
+  verticalLine.setAttribute('y1', '0');
+  verticalLine.setAttribute('y2', '100%');
+  verticalLine.classList.add('day__line');
+  group.appendChild(verticalLine);
+
+  const circle = document.createElementNS(graph.namespaceURI, 'circle');
+  circle.setAttribute('r', '5');
+  circle.classList.add('day__point');
+  group.appendChild(circle);
+
+  days.push(group);
+  graph.appendChild(group);
+}
+// end --draw circles
 
 let cachedMax, cachedMin, graphData;
 let spread = 0;
@@ -115,6 +136,18 @@ function drawGraph([start, end]) {
     });
 
     graphLine.setPoints(graphPoints);
+
+    // Circles
+
+    graphData.forEach((n, index) => {
+      const y = ((n - min) / spread) * height;
+      const x = index * (width / (graphData.length - 1));
+      const group = days[index];
+      group.style.transform = `translateX(${x}px)`;
+      const circle = group.children[1];
+      // circle.style.transform = `translate(${x}px,${y}px);`;
+      circle.style.transform = `translateY(${height - y}px)`;
+    });
 
     // Labels
 
