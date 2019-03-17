@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+body {
+  font: 14px Arial, Helvetica, sans-serif;
+}
+
 #root {
   position: relative;
   overflow: hidden;
@@ -17,8 +21,51 @@ svg.graph {
   /* transform: scaleY(-1); */
 }
 
-.line {
-  fill: #f2f4f5;
+.grid {
+  position: absolute;
+  width: 100%;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* transition: top 1s linear, opacity 1s linear; */
+}
+
+.grid__item {
+  color: #f2f4f5;
+  border-bottom: 1px solid #f2f4f5;
+  will-change: contents;
+}
+
+.grid--visible {
+  animation: grid-appear 1s linear forwards;
+}
+
+.grid--hidden {
+  animation: grid-dissolve 1s linear forwards;
+}
+
+@keyframes grid-dissolve {
+  0% {
+    top: 0;
+    opacity: 1;
+  }
+  100% {
+    top: -100%;
+    opacity: 0;
+  }
+}
+
+@keyframes grid-appear {
+  0% {
+    top: 50%;
+    opacity: 0;
+  }
+  100% {
+    top: 0;
+    opacity: 1;
+  }
 }
 
 .label {
@@ -41,4 +88,9 @@ h2 {
 }
 .slider__side--right {
   outline: 1px solid salmon;
+}
+
+.grid__item {
+  color: #666;
+  border-bottom: 1px solid #666;
 }

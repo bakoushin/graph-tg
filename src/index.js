@@ -13,6 +13,8 @@ const sparkline = new Sparkline(svg, data);
 const graph = document.getElementById('graph');
 const graphLine = new Polyline(graph, [[0, 0]]);
 
+let [visibleGrid, hiddenGrid] = document.querySelectorAll('.grid');
+
 // draw labels
 const textElements = [];
 for (const label of labels) {
@@ -75,6 +77,30 @@ function drawGraph([start, end]) {
       animationStart = performance.now();
 
       startAnimateY();
+
+      // Grid
+      const GRID_LINE_COUNT = 6;
+      const GIRD_LINE_HEIGHT = 17;
+      const spreadInGrid = spread - (spread * GIRD_LINE_HEIGHT) / height;
+      // hiddenGrid.innerHTML = '';
+      for (let i = 0; i < GRID_LINE_COUNT; i++) {
+        const index = hiddenGrid.children.length - i - 1;
+        const line = hiddenGrid.children[index];
+        line.textContent = Math.round((spreadInGrid / GRID_LINE_COUNT) * i);
+
+        // const line = document.createElement('div');
+        // line.classList.add('grid__item');
+        // line.textContent = Math.round((spreadInGrid / GRID_LINE_COUNT) * i);
+        // hiddenGrid.appendChild(line);
+      }
+
+      visibleGrid.classList.add('grid--hidden');
+      visibleGrid.classList.remove('grid--visible');
+      hiddenGrid.classList.remove('grid--hidden');
+      hiddenGrid.classList.add('grid--visible');
+      const temp = visibleGrid;
+      visibleGrid = hiddenGrid;
+      hiddenGrid = temp;
     }
 
     const elapsedTime = now - animationStart;
