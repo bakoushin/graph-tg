@@ -17,9 +17,14 @@ svg.graph {
   /* transform: scaleY(-1); */
 }
 
+.line {
+  fill: #f2f4f5;
+}
+
 .label {
-  text-anchor: middle;
+  /* text-anchor: middle; */
   will-change: transform;
+  transition: opacity 0.3s linear;
 }
 
 h2 {

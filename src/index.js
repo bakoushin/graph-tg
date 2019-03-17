@@ -90,14 +90,118 @@ function drawGraph([start, end]) {
 
     graphLine.setPoints(graphPoints);
 
+    // Labels
+
+    // Reset all labels
     for (const text of textElements) {
       text.removeAttribute('style');
+      text.style.opacity = 0;
+      // text.style.transition = 'opacity 1s linear';
     }
+
+    // Move visible labels
     graphPoints.forEach((point, index) => {
-      const text = textElements[index];
-      text.setAttribute('style', `transform: translateX(${100 + point[0]}px)`);
-      // text.style.tansform = `translateX(${point.x}px)`;
+      const text = textElements[startIndex + index];
+      text.style.transform = `translateX(${100 + point[0]}px)`;
     });
+
+    const LABEL_WIDTH = 50;
+    const viewportLabelCount = Math.floor(width / LABEL_WIDTH);
+
+    // console.log(
+    //   viewportLabelCount,
+    //   graphPoints.length,
+    //   viewportLabelCount / graphPoints.length,
+    //   textElements.length,
+    //   textElements.length * (viewportLabelCount / graphPoints.length)
+    // );
+
+    const totalLabelCount = Math.floor(
+      textElements.length * (viewportLabelCount / graphPoints.length)
+    );
+
+    let visibleLabels = [...textElements];
+    while (visibleLabels.length > totalLabelCount) {
+      const newVisisbleLabels = [];
+      for (let i = 0; i < visibleLabels.length; i += 2) {
+        newVisisbleLabels.push(visibleLabels[i]);
+      }
+      visibleLabels = newVisisbleLabels;
+    }
+
+    // let visibleLabels = [...textElements].filter((v, i) => i % 4 === 0);
+
+    /*
+    const labelCount = Math.floor(width / LABEL_WIDTH);
+    let step = Math.ceil(graphPoints.length / labelCount / 2);
+    //if (step % 2 !== 0) step += 1;
+    console.log(graphPoints.length, step);
+    let visibleLabels = [...textElements];
+    step = 2;
+    for (let i = 0; i < step; i++) {
+      const newVisisbleLabels = [];
+      for (let j = 0; j < visibleLabels.length; j += 2) {
+        newVisisbleLabels.push(visibleLabels[j]);
+      }
+      visibleLabels = newVisisbleLabels;
+    }
+    console.log(visibleLabels.length);
+    */
+
+    /*
+    let step = Math.floor(graphPoints.length / labelCount);
+    if (step % 2 !== 0) step += 1;
+    console.log(textElements.length, step);
+    let visibleLabels = [...textElements];
+    if (changeType === 'scaleLeft') visibleLabels.reverse();
+    visibleLabels = visibleLabels.filter((value, index) =>
+      index % step === 0 ? value : false
+    );
+    */
+
+    /*
+    let visibleLabels = textElements.slice(startIndex, endIndex);
+    if (changeType === 'scaleLeft') visibleLabels.reverse();
+    while (visibleLabels.length > labelCount) {
+      const newVisisbleLabels = [];
+      for (let i = 0; i < visibleLabels.length; i += 2) {
+        newVisisbleLabels.push(visibleLabels[i]);
+      }
+      visibleLabels = newVisisbleLabels;
+    }
+    */
+
+    visibleLabels.forEach(text => {
+      // text.style.transition = 'opacity 1s linear';
+      text.style.opacity = 1;
+    });
+
+    /*
+    // Hide redundant labels
+    const LABEL_WIDTH = 100;
+    let nextX = 0;
+    graphPoints.forEach(([x, _], index) => {
+      if (x >= nextX) {
+        nextX = x + LABEL_WIDTH;
+        const text = textElements[startIndex + index];
+        text.style.opacity = 1;
+      }
+    });
+    */
+
+    /*
+    // Show some labels 
+    const LABEL_WIDTH = 50;
+    const labelCount = Math.floor(width / LABEL_WIDTH);
+
+    for (let i = 0; i < labelCount; i++) {
+      const index = Math.floor(
+        ((graphPoints.length - 1) / (labelCount - 1)) * i
+      );
+      const text = textElements[startIndex + index];
+      text.style.opacity = 1;
+    }
+    */
   });
 }
 
