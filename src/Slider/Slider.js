@@ -22,7 +22,7 @@ class Slider {
       this.slider.addEventListener('pointerup', this.handleInteractionEnd);
       this.slider.addEventListener('pointercancel', this.handleInteractionEnd);
     } else {
-      this.slider.addEventListener('touchdown', this.handleInteractionStart);
+      this.slider.addEventListener('touchstart', this.handleInteractionStart);
       this.slider.addEventListener('touchmove', this.handleInteractionMove);
       this.slider.addEventListener('touchup', this.handleInteractionEnd);
       this.slider.addEventListener('touchcancel', this.handleInteractionEnd);
