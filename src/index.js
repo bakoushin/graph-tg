@@ -65,7 +65,7 @@ let currentSpread = 0;
 
 const slider = new Slider(document.querySelector('.slider'));
 slider.onChange(drawGraph);
-drawGraph(slider.position);
+drawGraph([slider.left, slider.right]);
 
 function drawGraph([start, end]) {
   requestAnimationFrame(now => {
