@@ -7,10 +7,20 @@ class Slider {
     this.slider = DOMElement;
     this.leftSide = this.slider.querySelector('.slider__side--left');
     this.rightSide = this.slider.querySelector('.slider__side--right');
+    this.leftControl = this.slider.querySelector('.slider__control--left');
+    this.rightControl = this.slider.querySelector('.slider__control--right');
+    this.frame = this.slider.querySelector('.slider__frame');
 
-    this.sliderPosition = 0;
-    this.sliderWidth = this.slider.clientWidth;
+    this.width = this.slider.clientWidth;
+
+    this.left = this.width * 0.66;
+    this.right = this.width;
+
     this.isMoving = false;
+
+    this.scaleLeftSide = this.scaleLeftSide.bind(this);
+    this.scaleRightSide = this.scaleRightSide.bind(this);
+    this.moveSlider = this.moveSlider.bind(this);
 
     this.handleInteractionStart = this.handleInteractionStart.bind(this);
     this.handleInteractionEnd = this.handleInteractionEnd.bind(this);
@@ -22,7 +32,7 @@ class Slider {
       this.slider.addEventListener('pointerup', this.handleInteractionEnd);
       this.slider.addEventListener('pointercancel', this.handleInteractionEnd);
     } else {
-      this.slider.addEventListener('touchdown', this.handleInteractionStart);
+      this.slider.addEventListener('touchstart', this.handleInteractionStart);
       this.slider.addEventListener('touchmove', this.handleInteractionMove);
       this.slider.addEventListener('touchup', this.handleInteractionEnd);
       this.slider.addEventListener('touchcancel', this.handleInteractionEnd);
@@ -34,9 +44,9 @@ class Slider {
     e.preventDefault();
 
     this.isMoving = true;
-    this.sliderWidth = this.slider.clientWidth;
-    this.parentWidth = this.slider.parentElement.clientWidth;
-    this.pointerPosition = this.getPointerX(e);
+    this.prevPointerPosition = this.getPointerPosition(e);
+
+    this.width = this.slider.clientWidth;
 
     if (window.PointerEvent) {
       e.target.setPointerCapture(e.pointerId);
@@ -58,84 +68,104 @@ class Slider {
     }
   }
   handleInteractionMove(e) {
-    if (!this.isMoving) return;
-
+    if (!this.isMoving) {
+      return;
+    }
     e.preventDefault();
 
-    const pointerX = Math.max(0, this.getPointerX(e));
+    const pointerPosition = this.getPointerPosition(e);
+    const difference = pointerPosition - this.prevPointerPosition;
+    this.prevPointerPosition = pointerPosition;
 
-    if (e.target === this.rightSide) {
-      if (!this.rightSideRAFInProgress) {
-        this.rightSideRAFInProgress = true;
-        requestAnimationFrame(() => {
-          this.sliderWidth += pointerX - this.pointerPosition;
-
-          if (this.sliderWidth < MIN_SLIDER_WIDTH) {
-            this.sliderWidth = MIN_SLIDER_WIDTH;
-            this.sliderPosition += pointerX - this.pointerPosition;
-            if (this.sliderPosition < 0) this.sliderPosition = 0;
-          }
-          if (this.sliderPosition + this.sliderWidth > this.parentWidth)
-            this.sliderWidth = this.parentWidth - this.sliderPosition;
-
-          this.pointerPosition = pointerX;
-
-          this.slider.style.width = `${this.sliderWidth}px`;
-          this.slider.style.transform = `translateX(${this.sliderPosition}px)`;
-          this.rightSideRAFInProgress = false;
-
-          this.handleChange();
-        });
-      }
-    } else if (e.target === this.leftSide) {
-      if (!this.leftSideRAFInProgress) {
-        this.leftSideRAFInProgress = true;
-        requestAnimationFrame(() => {
-          // TODO: ERR slider grows up when leftSide is moved to the far left.
-          this.sliderPosition += pointerX - this.pointerPosition;
-
-          if (this.sliderPosition < 0) this.sliderPosition = 0;
-
-          this.sliderWidth -= pointerX - this.pointerPosition;
-          // console.log(pointerX - this.pointerPosition);
-
-          if (this.sliderWidth < MIN_SLIDER_WIDTH)
-            this.sliderWidth = MIN_SLIDER_WIDTH;
-
-          if (this.sliderPosition + this.sliderWidth > this.parentWidth)
-            this.sliderPosition = this.parentWidth - this.sliderWidth;
-
-          // console.log(pointerX);
-          this.pointerPosition = pointerX;
-
-          this.slider.style.width = `${this.sliderWidth}px`;
-          this.slider.style.transform = `translateX(${this.sliderPosition}px)`;
-          this.leftSideRAFInProgress = false;
-
-          this.handleChange();
-        });
-      }
-    } else {
-      if (!this.moveRAFInProgress) {
-        this.moveRAFInProgress = true;
-        requestAnimationFrame(() => {
-          this.sliderPosition += pointerX - this.pointerPosition;
-          this.pointerPosition = pointerX;
-
-          if (this.sliderPosition < 0) this.sliderPosition = 0;
-          if (this.sliderPosition + this.sliderWidth > this.parentWidth)
-            this.sliderPosition = this.parentWidth - this.sliderWidth;
-
-          this.slider.style.transform = `translateX(${this.sliderPosition}px)`;
-          this.moveRAFInProgress = false;
-
-          this.handleChange();
-        });
-      }
+    if (e.target === this.leftControl) {
+      this.scaleLeftSide(difference);
+    } else if (e.target === this.rightControl) {
+      this.scaleRightSide(difference);
+    } else if (e.target === this.slider) {
+      this.moveSlider(difference);
     }
   }
-  getPointerX(e) {
+  getPointerPosition(e) {
     return e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
+  }
+  scaleLeftSide(difference) {
+    if (this.rafInProgress) {
+      return;
+    }
+    this.rafInProgress = true;
+    requestAnimationFrame(() => {
+      let left = this.left + difference;
+      left = Math.min(left, this.width - MIN_SLIDER_WIDTH);
+      left = Math.max(left, 0);
+      this.left = left;
+
+      if (this.left + MIN_SLIDER_WIDTH > this.right) {
+        this.right = this.left + MIN_SLIDER_WIDTH;
+      }
+
+      this.handleChange();
+      this.rafInProgress = false;
+    });
+  }
+  scaleRightSide(difference) {
+    if (this.rafInProgress) {
+      return;
+    }
+    this.rafInProgress = true;
+    requestAnimationFrame(() => {
+      let right = this.right + difference;
+      right = Math.min(right, this.width);
+      right = Math.max(right, MIN_SLIDER_WIDTH);
+      this.right = right;
+
+      if (this.right < this.left + MIN_SLIDER_WIDTH) {
+        this.left = this.right - MIN_SLIDER_WIDTH;
+      }
+
+      this.handleChange();
+      this.rafInProgress = false;
+    });
+  }
+  moveSlider(difference) {
+    if (this.rafInProgress) {
+      return;
+    }
+    this.rafInProgress = true;
+    requestAnimationFrame(() => {
+      if (this.right < this.width) {
+        let left = this.left + difference;
+        left = Math.min(left, this.width - MIN_SLIDER_WIDTH);
+        left = Math.max(left, 0);
+        this.left = left;
+      }
+
+      if (this.left > 0) {
+        let right = this.right + difference;
+        right = Math.min(right, this.width);
+        right = Math.max(right, MIN_SLIDER_WIDTH);
+        this.right = right;
+      }
+
+      this.handleChange();
+
+      this.rafInProgress = false;
+    });
+  }
+  get left() {
+    return this._left;
+  }
+  set left(value) {
+    this._left = value;
+    this.leftSide.style.transform = `translateX(${value}px)`;
+    this.frame.style.left = `${value}px`;
+  }
+  get right() {
+    return this._right;
+  }
+  set right(value) {
+    this._right = value;
+    this.rightSide.style.transform = `translateX(${value}px)`;
+    this.frame.style.right = `${this.width - value}px`;
   }
   onChange(callback) {
     this.changeCallback = callback;
@@ -143,10 +173,7 @@ class Slider {
   handleChange() {
     if (!this.changeCallback) return;
 
-    this.changeCallback(this.position);
-  }
-  get position() {
-    return [this.sliderPosition, this.sliderPosition + this.sliderWidth];
+    this.changeCallback([this.left, this.right]);
   }
 }
 

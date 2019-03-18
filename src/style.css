@@ -104,13 +104,6 @@ h2 {
 
 /* DEBUG */
 
-.slider__side--left {
-  outline: 1px solid lightseagreen;
-}
-.slider__side--right {
-  outline: 1px solid salmon;
-}
-
 .grid__item {
   color: #666;
   border-bottom: 1px solid #666;
