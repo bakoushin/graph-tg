@@ -10,6 +10,8 @@ class Slider {
     this.leftControl = this.slider.querySelector('.slider__control--left');
     this.rightControl = this.slider.querySelector('.slider__control--right');
     this.frame = this.slider.querySelector('.slider__frame');
+    this.frameLeft = this.slider.querySelector('.slider__frame-side--left');
+    this.frameRight = this.slider.querySelector('.slider__frame-side--right');
 
     this.width = this.slider.clientWidth;
 
@@ -113,13 +115,18 @@ class Slider {
     right = Math.max(right, this.left + MIN_SLIDER_WIDTH);
     this.right = right;
   }
+  setFrameScale() {
+    const ratio = (this.right - this.left) / this.width;
+    this.frame.style.transform = `translateX(${this.left}px) scaleX(${ratio})`;
+  }
   get left() {
     return this._left;
   }
   set left(value) {
     this._left = value;
     this.leftSide.style.transform = `translateX(${value}px)`;
-    this.frame.style.left = `${value}px`;
+    this.frameLeft.style.transform = `translateX(${value}px)`;
+    this.setFrameScale();
   }
   get right() {
     return this._right;
@@ -127,7 +134,8 @@ class Slider {
   set right(value) {
     this._right = value;
     this.rightSide.style.transform = `translateX(${value}px)`;
-    this.frame.style.right = `${this.width - value}px`;
+    this.frameRight.style.transform = `translateX(${value}px)`;
+    this.setFrameScale();
   }
   onChange(callback) {
     this.changeCallback = callback;

@@ -2,9 +2,6 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  /* box-shadow: inset 0px 0px 0px 1px #999; */
-  /* inset -4px 0px 0px 0px #999,
-    inset 4px 0px 0px 0px #999; */
   touch-action: none;
 }
 
@@ -45,24 +42,29 @@
 .slider__frame {
   position: absolute;
   height: 100%;
+  width: 100%;
   border-style: solid;
-  border-width: 2px 5px;
+  border-width: 2px 0;
   border-color: rgba(221, 234, 243, 1);
   z-index: -10;
+  transform-origin: left;
+  will-change: transform;
 }
 
-/* TODO: debug */
-/* .slider__side--left {
-  background-color: blueviolet;
-  opacity: 0.25;
-}
-.slider__side--right {
-  background-color: salmon;
-  opacity: 0.25;
+.slider__frame-side {
+  position: absolute;
+  left: 0;
+  height: 100%;
+  width: 5px;
+  background-color: rgba(221, 234, 243, 1);
+  z-index: -10;
+  will-change: transform;
 }
 
-.slider__control--left,
-.slider__control--right {
-  border: 2px solid yellowgreen;
+.slider__frame-side--left {
+  right: -5px;
 }
-*/
+
+.slider__frame-side--right {
+  left: -5px;
+}
