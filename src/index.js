@@ -2,6 +2,8 @@ import './style.css';
 
 import Graph from './Graph/Graph';
 
+import './checkbox.css';
+
 import Sparkline from './Sparkline/Sparkline';
 import Polyline from './Polyline/Polyline';
 import Slider from './Slider/Slider';
@@ -14,7 +16,7 @@ const labels = columns[0].slice(1);
 
 const main = document.getElementById('main');
 // const charts = dataset.map(item => new Graph(main, item));
-new Graph(main, dataset[0]);
+//new Graph(main, dataset[0]);
 
 //------
 
