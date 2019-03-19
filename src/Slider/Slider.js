@@ -101,6 +101,7 @@ class Slider {
           this.setLeftPosition(difference);
           this.right = this.left + width;
         }
+        this.handleChange();
       });
     }
   }
