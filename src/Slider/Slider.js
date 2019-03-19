@@ -18,9 +18,8 @@ class Slider {
 
     this.isMoving = false;
 
-    this.scaleLeftSide = this.scaleLeftSide.bind(this);
-    this.scaleRightSide = this.scaleRightSide.bind(this);
-    this.moveSlider = this.moveSlider.bind(this);
+    this.setLeftPosition = this.setLeftPosition.bind(this);
+    this.setRightPosition = this.setRightPosition.bind(this);
 
     this.handleInteractionStart = this.handleInteractionStart.bind(this);
     this.handleInteractionEnd = this.handleInteractionEnd.bind(this);
@@ -78,78 +77,41 @@ class Slider {
     this.prevPointerPosition = pointerPosition;
 
     if (e.target === this.leftControl) {
-      this.scaleLeftSide(difference);
+      requestAnimationFrame(() => {
+        this.setLeftPosition(difference);
+        this.handleChange();
+      });
     } else if (e.target === this.rightControl) {
-      this.scaleRightSide(difference);
+      requestAnimationFrame(() => {
+        this.setRightPosition(difference);
+        this.handleChange();
+      });
     } else if (e.target === this.slider) {
-      this.moveSlider(difference);
+      requestAnimationFrame(() => {
+        if (this.right < this.width) {
+          this.setLeftPosition(difference);
+        }
+        if (this.left > 0) {
+          this.setRightPosition(difference);
+        }
+        this.handleChange();
+      });
     }
   }
   getPointerPosition(e) {
     return e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
   }
-  scaleLeftSide(difference) {
-    if (this.rafInProgress) {
-      return;
-    }
-    this.rafInProgress = true;
-    requestAnimationFrame(() => {
-      let left = this.left + difference;
-      left = Math.min(left, this.width - MIN_SLIDER_WIDTH);
-      left = Math.max(left, 0);
-      this.left = left;
-
-      if (this.left + MIN_SLIDER_WIDTH > this.right) {
-        this.right = this.left + MIN_SLIDER_WIDTH;
-      }
-
-      this.handleChange();
-      this.rafInProgress = false;
-    });
+  setLeftPosition(difference) {
+    let left = this.left + difference;
+    left = Math.min(left, this.right - MIN_SLIDER_WIDTH);
+    left = Math.max(left, 0);
+    this.left = left;
   }
-  scaleRightSide(difference) {
-    if (this.rafInProgress) {
-      return;
-    }
-    this.rafInProgress = true;
-    requestAnimationFrame(() => {
-      let right = this.right + difference;
-      right = Math.min(right, this.width);
-      right = Math.max(right, MIN_SLIDER_WIDTH);
-      this.right = right;
-
-      if (this.right < this.left + MIN_SLIDER_WIDTH) {
-        this.left = this.right - MIN_SLIDER_WIDTH;
-      }
-
-      this.handleChange();
-      this.rafInProgress = false;
-    });
-  }
-  moveSlider(difference) {
-    if (this.rafInProgress) {
-      return;
-    }
-    this.rafInProgress = true;
-    requestAnimationFrame(() => {
-      if (this.right < this.width) {
-        let left = this.left + difference;
-        left = Math.min(left, this.width - MIN_SLIDER_WIDTH);
-        left = Math.max(left, 0);
-        this.left = left;
-      }
-
-      if (this.left > 0) {
-        let right = this.right + difference;
-        right = Math.min(right, this.width);
-        right = Math.max(right, MIN_SLIDER_WIDTH);
-        this.right = right;
-      }
-
-      this.handleChange();
-
-      this.rafInProgress = false;
-    });
+  setRightPosition(difference) {
+    let right = this.right + difference;
+    right = Math.min(right, this.width);
+    right = Math.max(right, this.left + MIN_SLIDER_WIDTH);
+    this.right = right;
   }
   get left() {
     return this._left;
@@ -171,7 +133,9 @@ class Slider {
     this.changeCallback = callback;
   }
   handleChange() {
-    if (!this.changeCallback) return;
+    if (!this.changeCallback) {
+      return;
+    }
 
     this.changeCallback([this.left, this.right]);
   }
