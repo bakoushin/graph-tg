@@ -90,13 +90,17 @@ class Slider {
       });
     } else if (e.target === this.slider) {
       requestAnimationFrame(() => {
-        if (this.right < this.width) {
-          this.setLeftPosition(difference);
-        }
-        if (this.left > 0) {
+        const movingLeft = difference < 0;
+        const movingRight = difference > 0;
+        const width = this.right - this.left;
+        if (movingRight) {
           this.setRightPosition(difference);
+          this.left = this.right - width;
         }
-        this.handleChange();
+        if (movingLeft) {
+          this.setLeftPosition(difference);
+          this.right = this.left + width;
+        }
       });
     }
   }
