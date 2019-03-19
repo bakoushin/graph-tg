@@ -364,3 +364,5 @@ add.addEventListener('click', () => {
   // sparkline._data['y0'].data = [...data, ...sparkline._data['y0'].data];
   // sparkline.onResize();
 });
+
+if (module.hot) module.hot.accept();
