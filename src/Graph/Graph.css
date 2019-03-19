@@ -1,0 +1,12 @@
+.sparkline {
+  position: relative;
+  height: 50px;
+}
+
+.sparkline__svg {
+  position: absolute;
+  width: 100%;
+  height: calc(100% - 4px);
+  top: 2px;
+  display: block;
+}
