@@ -27,8 +27,9 @@ class Graph {
       }
     }
 
-    this.DOMElement = document.createElement('section');
-    this.DOMElement.innerHTML = template;
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = template;
+    this.DOMElement = tempElement.children[0];
     container.appendChild(this.DOMElement);
 
     this.sparklineSVG = this.DOMElement.querySelector('.sparkline__svg');
