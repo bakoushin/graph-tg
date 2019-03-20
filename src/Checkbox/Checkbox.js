@@ -2,12 +2,12 @@ import './Checkbox.css';
 import template from './Checkbox.html';
 
 class Checkbox {
-  constructor({ index, title, color = '#ccc', container, onChange = null }) {
+  constructor({ id, title, color = '#ccc', container, onChange = null }) {
     const tempElement = document.createElement('div');
     tempElement.innerHTML = template;
     this.DOMElement = tempElement.children[0];
 
-    this.index = index;
+    this.id = id;
 
     const titleElement = this.DOMElement.querySelector('.checkbox__title');
     titleElement.textContent = title;
@@ -54,7 +54,10 @@ class Checkbox {
     if (!this.onChangeCallback) {
       return;
     }
-    this.onChangeCallback(this.index, e.target.checked);
+    this.onChangeCallback({
+      id: this.id,
+      checked: e.target.checked
+    });
   }
 }
 

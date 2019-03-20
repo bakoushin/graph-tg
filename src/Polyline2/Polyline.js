@@ -1,13 +1,9 @@
 import './Polyline.css';
 
+const TRANSITION_DURATION = 150;
+
 class Polyline {
-  constructor(
-    svgContainer,
-    data,
-    min,
-    max,
-    { color = '#000', width = 1 } = {}
-  ) {
+  constructor({ svgContainer, values, min, max, color = '#000', width = 1 }) {
     this.svg = svgContainer;
 
     this.polyline = document.createElementNS(this.svg.namespaceURI, 'polyline');
@@ -15,28 +11,29 @@ class Polyline {
     this.polyline.style.stroke = color;
     this.polyline.style.width = width;
 
-    this.setData({ data, min, max });
+    this.setData({ values, min, max });
 
     this.svg.appendChild(this.polyline);
   }
-  setData({ data, min, max }) {
-    this.data = [...data];
+  setData({ values, min, max }) {
+    this.values = [...values];
     this.min = min;
     this.max = max;
-    this.points = this.mapDataToPoints(this.data, this.min, this.max);
+    this.points = this.mapValuesToPoints(this.values, this.min, this.max);
     this.setPoints(this.points);
   }
-  mapDataToPoints(data, min, max) {
+  setBounds({ min, max }) {
+    const newPoints = this.mapValuesToPoints(this.values, min, max);
+    this.updatePoints(newPoints);
+  }
+  mapValuesToPoints(values, min, max) {
     const { width, height } = this.svg.getBoundingClientRect();
-
     const spread = max - min;
-
-    const points = data.map((n, index) => {
+    const points = values.map((n, index) => {
       const y = ((n - min) / spread) * height;
-      const x = index * (width / (data.length - 1));
+      const x = index * (width / (values.length - 1));
       return [x, y];
     });
-
     return points;
   }
   setPoints(points) {
@@ -49,62 +46,47 @@ class Polyline {
       this.polyline.points.appendItem(point);
     }
   }
-  /*
-  updatePoints(points, duration = 1000) {
+  updatePoints(points) {
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
     }
 
-    this.points = [...points];
-    // animate change in points
-    const start = performance.now();
+    this.points = points;
 
-    const diff = this.points.map(([x, y], index) => {
-      const diffX = x - this.polyline.points.getItem(index).x;
-      const diffY = y - this.polyline.points.getItem(index).y;
-      return [diffX, diffY];
-    });
-
-    const initialPoints = [];
+    const prevPoints = [];
     for (let i = 0; i < this.polyline.points.numberOfItems; i++) {
       const { x, y } = this.polyline.points.getItem(i);
-      initialPoints.push({ x, y });
+      prevPoints.push([x, y]);
     }
 
+    const difference = this.points.map(([x, y], index) => {
+      const [prevX, prevY] = prevPoints[index];
+      return [x - prevX, y - prevY];
+    });
+
+    const start = performance.now();
     const animate = now => {
-      const elapsed = now - start;
-      const progress = Math.min(1, elapsed / duration);
-      diff.forEach(([x, y], index) => {
-        this.polyline.points.getItem(index).x =
-          initialPoints[index].x + x * progress;
-        this.polyline.points.getItem(index).y =
-          initialPoints[index].y + y * progress;
+      const progress = Math.min(1, (now - start) / TRANSITION_DURATION);
+      difference.forEach(([x, y], index) => {
+        const [prevX, prevY] = prevPoints[index];
+        const point = this.polyline.points.getItem(index);
+        point.x = prevX + x * progress;
+        point.y = prevY + y * progress;
       });
       if (progress < 1) {
         this.rafId = requestAnimationFrame(animate);
       }
     };
     this.rafId = requestAnimationFrame(animate);
-    // requestAnimationFrame(() => {
-    //   this.points.forEach(([x, y], index) => {
-    //     this.polyline.points[index].x = x;
-    //     this.polyline.points[index].y = y;
-    //   });
-    // });
   }
   show() {
-    //opacity +
-    console.log('show');
     this.polyline.style.opacity = 1;
     this.polyline.style.transition = 'opacity 1s linear';
   }
   hide() {
-    // opacity -
-    console.log('hide');
     this.polyline.style.opacity = 0;
     this.polyline.style.transition = 'opacity 0.3s linear';
   }
-  */
 }
 
 export default Polyline;
