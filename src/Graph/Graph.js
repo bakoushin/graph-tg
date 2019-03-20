@@ -1,6 +1,7 @@
 import './Graph.css';
 import template from './Graph.html';
 import Polyline from '../Polyline2/Polyline';
+import Checkbox from '../Checkbox/Checkbox';
 
 class Graph {
   constructor(container, dataset) {
@@ -32,7 +33,22 @@ class Graph {
 
     this.sparklineSVG = this.DOMElement.querySelector('.sparkline__svg');
     this.sparklines = this.data.map(d => new Polyline(this.sparklineSVG, d));
+
+    // Checkboxes
+    this.checkboxesElement = this.DOMElement.querySelector(
+      '.graph__checkboxes'
+    );
+    this.checkboxes = this.names.map(
+      (name, index) =>
+        new Checkbox({
+          title: name,
+          color: this.colors[index],
+          container: this.checkboxesElement,
+          onChange: this.handleCheckboxChange
+        })
+    );
   }
+  handleCheckboxChange() {}
 }
 
 export default Graph;
