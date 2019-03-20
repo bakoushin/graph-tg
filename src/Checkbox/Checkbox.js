@@ -3,13 +3,9 @@ import template from './Checkbox.html';
 
 class Checkbox {
   constructor({ title, color = '#ccc', container, onChange = null }) {
-    this.handleClick = this.handleClick.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
-
-    this.DOMElement = document.createElement('label');
-    this.DOMElement.innerHTML = template;
-    this.DOMElement.classList.add('checkbox');
-    this.DOMElement.addEventListener('click', this.handleClick);
+    const tempElement = document.createElement('div');
+    tempElement.innerHTML = template;
+    this.DOMElement = tempElement.children[0];
 
     const titleElement = this.DOMElement.querySelector('.checkbox__title');
     titleElement.textContent = title;
@@ -18,23 +14,39 @@ class Checkbox {
     checkmarkElement.style.borderColor = color;
     checkmarkElement.style.backgroundColor = color;
 
+    this.handleClick = this.handleClick.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
+
     const inputElement = this.DOMElement.querySelector('.checkbox__input');
     inputElement.addEventListener('change', this.hadleInputChange);
+    inputElement.addEventListener('click', this.handleClick);
 
     this.onChangeCallback = onChange;
-
-    this.rippleElement = this.DOMElement.querySelector('.checkbox__ripple');
 
     container.appendChild(this.DOMElement);
   }
   handleClick(e) {
-    const pointer = e.targetTouches ? e.targetTouches[0] : e;
-    const x = pointer.clientX;
-    const y = pointer.clientY;
-    this.rippleElement.style.transform = `translate(${x}px,${y}px) scale(1)`;
-    setTimeout(() => {
-      // this.rippleElement.style.transform = '';
-    }, 650);
+    const { clientX, clientY } = e.targetTouches ? e.targetTouches[0] : e;
+    const {
+      left,
+      top,
+      width,
+      height
+    } = e.target.parentElement.getBoundingClientRect();
+
+    const x = clientX - left - width / 2;
+    const y = clientY - top - width / 2;
+
+    const rippleSize = Math.max(width, height);
+
+    const rippleElement = document.createElement('div');
+    rippleElement.classList.add('checkbox__ripple');
+    rippleElement.style.left = `${x}px`;
+    rippleElement.style.top = `${y}px`;
+    rippleElement.style.width = `${rippleSize}px`;
+    rippleElement.style.height = `${rippleSize}px`;
+    this.DOMElement.insertAdjacentElement('afterbegin', rippleElement);
+    setTimeout(() => rippleElement.remove(), 650);
   }
   handleInputChange(e) {
     if (!this.onChangeCallback) {
