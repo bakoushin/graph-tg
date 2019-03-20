@@ -4,6 +4,7 @@
   padding-left: 48px;
   border: 2px solid rgba(233, 238, 242, 1);
   border-radius: 1000px;
+  overflow: hidden;
   line-height: 1;
   font-size: 14px;
   user-select: none;
@@ -48,13 +49,31 @@
 }
 
 /* Create the checkmark/indicator (hidden when not checked) */
+.checkmark:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  bottom: 50%;
+  width: 1000%;
+  height: 1000%;
+  border-radius: 1000px;
+  background-color: rgba(221, 234, 243, 0.5);
+  transition: transform 0.3s ease-in;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: -10;
+}
+
+.checkmark:hover:before {
+  transform: translate(-50%, -50%) scale(1);
+}
+
 .checkmark:after {
   content: '';
   position: absolute;
   width: 100%;
   height: 100%;
   border-radius: 1000px;
-  background: #fff;
+  background-color: #fff;
   transition: transform 0.15s ease-in;
 }
 
