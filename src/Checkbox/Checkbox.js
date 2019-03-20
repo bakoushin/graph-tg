@@ -2,10 +2,12 @@ import './Checkbox.css';
 import template from './Checkbox.html';
 
 class Checkbox {
-  constructor({ title, color = '#ccc', container, onChange = null }) {
+  constructor({ index, title, color = '#ccc', container, onChange = null }) {
     const tempElement = document.createElement('div');
     tempElement.innerHTML = template;
     this.DOMElement = tempElement.children[0];
+
+    this.index = index;
 
     const titleElement = this.DOMElement.querySelector('.checkbox__title');
     titleElement.textContent = title;
@@ -18,7 +20,7 @@ class Checkbox {
     this.handleInputChange = this.handleInputChange.bind(this);
 
     const inputElement = this.DOMElement.querySelector('.checkbox__input');
-    inputElement.addEventListener('change', this.hadleInputChange);
+    inputElement.addEventListener('change', this.handleInputChange);
     inputElement.addEventListener('click', this.handleClick);
 
     this.onChangeCallback = onChange;
@@ -52,7 +54,7 @@ class Checkbox {
     if (!this.onChangeCallback) {
       return;
     }
-    onChangeCallback(e.target.checked);
+    this.onChangeCallback(this.index, e.target.checked);
   }
 }
 

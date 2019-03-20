@@ -42,6 +42,7 @@ class Graph {
     this.checkboxes = this.names.map(
       (name, index) =>
         new Checkbox({
+          index,
           title: name,
           color: this.colors[index],
           container: this.checkboxesElement,
@@ -49,7 +50,9 @@ class Graph {
         })
     );
   }
-  handleCheckboxChange() {}
+  handleCheckboxChange(index, checked) {
+    console.log(index, checked);
+  }
 }
 
 export default Graph;
