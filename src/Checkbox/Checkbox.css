@@ -14,10 +14,6 @@
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
-.checkbox:hover {
-  border-color: rgba(217, 225, 232, 1);
-}
-
 .checkbox__input {
   position: absolute;
   opacity: 0;
