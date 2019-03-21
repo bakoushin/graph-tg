@@ -42,6 +42,7 @@ class Graph {
     this.handleSliderChange = this.handleSliderChange.bind(this);
 
     this.drawFrame = this.drawFrame.bind(this);
+    this.animateY = this.animateY.bind(this);
 
     // Lines
     this.data = this.data.map(data => {
@@ -173,54 +174,50 @@ class Graph {
       const { width, height } = graph.getBoundingClientRect();
 
       // On spread change
-      if (this.frameSpread !== this.currentSpread) {
-        this.currentSpread = this.currentSpread || this.frameSpread;
+      if (this.frameSpread !== this.cachedFrameSpread) {
+        this.cachedFrameSpread = this.frameSpread;
 
-        this.spreadDiff = this.frameSpread - this.currentSpread;
+        this.currentSpread = this.currentSpread || this.cachedFrameSpread;
+        this.spreadDiff = this.cachedFrameSpread - this.currentSpread;
 
         // Start line transition
         animationStart = performance.now();
-        this.startAnimateY();
 
         // Update grid
+        /*
+        const spreadInGrid =
+          this.frameSpread - (this.spread * GRID_LINE_HEIGHT) / height;
+        for (let i = 0; i < GRID_LINE_COUNT; i++) {
+          const index = this.hiddenGrid.children.length - i - 1;
+          const line = this.hiddenGrid.children[index];
+          line.textContent = Math.round((spreadInGrid / GRID_LINE_COUNT) * i);
+        }
 
-        // const spreadInGrid =
-        //   this.frameSpread - (this.spread * GRID_LINE_HEIGHT) / height;
-        // for (let i = 0; i < GRID_LINE_COUNT; i++) {
-        //   const index = this.hiddenGrid.children.length - i - 1;
-        //   const line = this.hiddenGrid.children[index];
-        //   line.textContent = Math.round((spreadInGrid / GRID_LINE_COUNT) * i);
-        // }
-
-        // this.visibleGrid.classList.add('grid--hidden');
-        // this.visibleGrid.classList.remove('grid--visible');
-        // this.hiddenGrid.classList.remove('grid--hidden');
-        // this.hiddenGrid.classList.add('grid--visible');
-        // const temp = this.visibleGrid;
-        // this.visibleGrid = this.hiddenGrid;
-        // this.hiddenGrid = temp;
+        this.visibleGrid.classList.add('grid--hidden');
+        this.visibleGrid.classList.remove('grid--visible');
+        this.hiddenGrid.classList.remove('grid--hidden');
+        this.hiddenGrid.classList.add('grid--visible');
+        const temp = this.visibleGrid;
+        this.visibleGrid = this.hiddenGrid;
+        this.hiddenGrid = temp;
+        */
       }
 
-      // Lines
-      const progress = Math.min(1, (now - animationStart) / duration);
-      this.currentSpread = this.frameSpread - this.spreadDiff * (1 - progress);
+      requestAnimationFrame(this.animateY);
 
-      this.data
-        .filter(({ visible }) => visible)
-        .forEach(({ frame, line }) => {
-          // Lines
-          line.setData({ values: frame, spread: this.currentSpread });
-
-          // Circles
-          // frame.forEach((n, index) => {
-          //   const y = (n / this.frameSpread) * height;
-          //   const x = index * (width / (frame.length - 1));
-          //   const group = days[index];
-          //   group.style.transform = `translateX(${x}px)`;
-          //   const circle = group.children[1];
-          //   circle.style.transform = `translateY(${height - y}px)`;
-          // });
-        });
+      // this.data
+      //   .filter(({ visible }) => visible)
+      //   .forEach(({ frame, line }) => {
+      //     // Circles
+      //     frame.forEach((n, index) => {
+      //       const y = (n / this.frameSpread) * height;
+      //       const x = index * (width / (frame.length - 1));
+      //       const group = days[index];
+      //       group.style.transform = `translateX(${x}px)`;
+      //       const circle = group.children[1];
+      //       circle.style.transform = `translateY(${height - y}px)`;
+      //     });
+      //   });
 
       // Labels
       /*
@@ -258,22 +255,19 @@ class Graph {
       */
     });
   }
-  startAnimateY() {
-    const animateY = now => {
-      const progress = Math.min(1, (now - animationStart) / duration);
-      this.currentSpread = this.frameSpread - this.spreadDiff * (1 - progress);
-      // console.log(this.currentSpread);
+  animateY(now) {
+    const progress = Math.min(1, (now - animationStart) / duration);
+    this.currentSpread =
+      this.cachedFrameSpread - this.spreadDiff * (1 - progress);
 
-      this.data.forEach(({ frame, line }) => {
-        // Lines
-        line.setData({ values: frame, spread: this.currentSpread });
-      });
+    this.data.forEach(({ frame, line }) => {
+      // Lines
+      line.setData({ values: frame, spread: this.currentSpread });
+    });
 
-      if (progress < 1) {
-        requestAnimationFrame(animateY);
-      }
-    };
-    requestAnimationFrame(animateY);
+    if (progress < 1) {
+      requestAnimationFrame(this.animateY);
+    }
   }
 }
 
