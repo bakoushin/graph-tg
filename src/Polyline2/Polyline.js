@@ -9,9 +9,11 @@ class Polyline {
     this.polyline = document.createElementNS(this.svg.namespaceURI, 'polyline');
     this.polyline.classList.add('polyline');
     this.polyline.style.stroke = color;
-    this.polyline.style.width = width;
+    this.polyline.style.strokeWidth = width;
 
-    this.setData({ values, min, max });
+    if (values && spread) {
+      this.setData({ values, spread });
+    }
 
     this.svg.appendChild(this.polyline);
   }

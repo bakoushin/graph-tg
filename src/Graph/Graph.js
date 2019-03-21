@@ -9,6 +9,7 @@ const GRID_LINE_COUNT = 6;
 const GRID_LINE_HEIGHT = 17;
 
 let animationStart;
+let duration = 1000;
 
 class Graph {
   constructor(container, dataset) {
@@ -39,6 +40,19 @@ class Graph {
 
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
+
+    this.drawFrame = this.drawFrame.bind(this);
+
+    // Lines
+    this.data = this.data.map(data => {
+      const { frame, color } = data;
+      const line = new Polyline({
+        color,
+        width: 2,
+        svgContainer: this.svg
+      });
+      return { ...data, line };
+    });
 
     // Sparklines
     const spread = this.spread;
@@ -96,11 +110,14 @@ class Graph {
   handleCheckboxChange({ id, checked }) {
     const data = this.dataIndex[id];
     data.visible = checked;
-    this.data.forEach(({ sparkline, visible }) => {
+    this.data.forEach(({ line, sparkline, visible }) => {
       if (visible) {
+        line.show();
+        line.setSpread(this.frameSpread);
         sparkline.show();
         sparkline.setSpread(this.spread);
       } else {
+        line.hide();
         sparkline.hide();
       }
     });
@@ -149,74 +166,64 @@ class Graph {
       const frame = values.slice(startIndex, endIndex);
       return { ...data, frame };
     });
-    this.data = this.data.map(data => {
-      const { frame, color } = data;
-      const line = new Polyline({
-        values: frame,
-        spread: this.spread,
-        color,
-        width: 2,
-        svgContainer: this.svg
-      });
-      return { ...data, line };
-    });
+    this.data.map(({ frame }) => this.drawFrame(frame));
   }
   drawFrame(frame) {
     requestAnimationFrame(now => {
       const { width, height } = graph.getBoundingClientRect();
-      const { min, max } = this.frameBounds;
 
       // On spread change
-      if (min !== this.prevMin || max !== this.prevMax) {
-        // Update bounds
-        this.prevMin = min;
-        this.prevMax = max;
-        const newSpread = max - min;
-        this.spreadDiff = newSpread - this.spread;
-        this.spread = newSpread;
+      if (this.frameSpread !== this.currentSpread) {
+        this.currentSpread = this.currentSpread || this.frameSpread;
+
+        this.spreadDiff = this.frameSpread - this.currentSpread;
 
         // Start line transition
         animationStart = performance.now();
-        startAnimateY();
+        this.startAnimateY();
 
         // Update grid
-        const spreadInGrid =
-          this.spread - (this.spread * GRID_LINE_HEIGHT) / height;
-        for (let i = 0; i < GRID_LINE_COUNT; i++) {
-          const index = hiddenGrid.children.length - i - 1;
-          const line = hiddenGrid.children[index];
-          line.textContent = Math.round((spreadInGrid / GRID_LINE_COUNT) * i);
-        }
 
-        this.visibleGrid.classList.add('grid--hidden');
-        this.visibleGrid.classList.remove('grid--visible');
-        this.hiddenGrid.classList.remove('grid--hidden');
-        this.hiddenGrid.classList.add('grid--visible');
-        const temp = this.visibleGrid;
-        this.visibleGrid = this.hiddenGrid;
-        this.hiddenGrid = temp;
+        // const spreadInGrid =
+        //   this.frameSpread - (this.spread * GRID_LINE_HEIGHT) / height;
+        // for (let i = 0; i < GRID_LINE_COUNT; i++) {
+        //   const index = this.hiddenGrid.children.length - i - 1;
+        //   const line = this.hiddenGrid.children[index];
+        //   line.textContent = Math.round((spreadInGrid / GRID_LINE_COUNT) * i);
+        // }
+
+        // this.visibleGrid.classList.add('grid--hidden');
+        // this.visibleGrid.classList.remove('grid--visible');
+        // this.hiddenGrid.classList.remove('grid--hidden');
+        // this.hiddenGrid.classList.add('grid--visible');
+        // const temp = this.visibleGrid;
+        // this.visibleGrid = this.hiddenGrid;
+        // this.hiddenGrid = temp;
       }
 
       // Lines
-      const progress = Math.min(1, now - animationStart / duration);
-      const currentSpread = this.spread - this.spreadDiff * (1 - progress);
-      this.data.forEach(({ frame, line }) => {
-        // Lines
-        line.setData({ values: frame, spread: currentSpread });
+      const progress = Math.min(1, (now - animationStart) / duration);
+      this.currentSpread = this.frameSpread - this.spreadDiff * (1 - progress);
 
-        // Circles
-        data.forEach((n, index) => {
-          const y = ((n - min) / spread) * height;
-          const x = index * (width / (data.length - 1));
-          const group = days[index];
-          group.style.transform = `translateX(${x}px)`;
-          const circle = group.children[1];
-          circle.style.transform = `translateY(${height - y}px)`;
+      this.data
+        .filter(({ visible }) => visible)
+        .forEach(({ frame, line }) => {
+          // Lines
+          line.setData({ values: frame, spread: this.currentSpread });
+
+          // Circles
+          // frame.forEach((n, index) => {
+          //   const y = (n / this.frameSpread) * height;
+          //   const x = index * (width / (frame.length - 1));
+          //   const group = days[index];
+          //   group.style.transform = `translateX(${x}px)`;
+          //   const circle = group.children[1];
+          //   circle.style.transform = `translateY(${height - y}px)`;
+          // });
         });
-      });
 
       // Labels
-
+      /*
       // Reset all labels
       for (const text of textElements) {
         text.removeAttribute('style');
@@ -248,24 +255,25 @@ class Graph {
       visibleLabels.forEach(text => {
         text.style.opacity = 1;
       });
+      */
     });
   }
   startAnimateY() {
-    requestAnimationFrame(animateY);
-
     const animateY = now => {
       const progress = Math.min(1, (now - animationStart) / duration);
-      currentSpread = this.spread - this.spreadDiff * (1 - progress);
+      this.currentSpread = this.frameSpread - this.spreadDiff * (1 - progress);
+      // console.log(this.currentSpread);
 
       this.data.forEach(({ frame, line }) => {
         // Lines
-        line.setData({ values: frame, spread: currentSpread });
+        line.setData({ values: frame, spread: this.currentSpread });
       });
 
       if (progress < 1) {
         requestAnimationFrame(animateY);
       }
     };
+    requestAnimationFrame(animateY);
   }
 }
 

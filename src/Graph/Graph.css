@@ -1,3 +1,10 @@
+.graph__svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .sparkline {
   position: relative;
   height: 50px;
