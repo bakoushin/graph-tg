@@ -3,7 +3,7 @@ import './Polyline.css';
 const TRANSITION_DURATION = 150;
 
 class Polyline {
-  constructor({ svgContainer, values, min, max, color = '#000', width = 1 }) {
+  constructor({ svgContainer, values, spread, color = '#000', width = 1 }) {
     this.svg = svgContainer;
 
     this.polyline = document.createElementNS(this.svg.namespaceURI, 'polyline');
@@ -15,22 +15,20 @@ class Polyline {
 
     this.svg.appendChild(this.polyline);
   }
-  setData({ values, min, max }) {
+  setData({ values, spread }) {
     this.values = [...values];
-    this.min = min;
-    this.max = max;
-    this.points = this.mapValuesToPoints(this.values, this.min, this.max);
+    this.spread = spread;
+    this.points = this.mapValuesToPoints(this.values, this.spread);
     this.setPoints(this.points);
   }
-  setBounds({ min, max }) {
-    const newPoints = this.mapValuesToPoints(this.values, min, max);
+  setSpread(spread) {
+    const newPoints = this.mapValuesToPoints(this.values, spread);
     this.updatePoints(newPoints);
   }
-  mapValuesToPoints(values, min, max) {
+  mapValuesToPoints(values, spread) {
     const { width, height } = this.svg.getBoundingClientRect();
-    const spread = max - min;
     const points = values.map((n, index) => {
-      const y = ((n - min) / spread) * height;
+      const y = (n / spread) * height;
       const x = index * (width / (values.length - 1));
       return [x, y];
     });

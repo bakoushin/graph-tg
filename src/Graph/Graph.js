@@ -1,8 +1,14 @@
 import './Graph.css';
+import './Grid.css';
 import template from './Graph.html';
 import Polyline from '../Polyline2/Polyline';
 import Checkbox from '../Checkbox/Checkbox';
 import Slider from '../Slider/Slider';
+
+const GRID_LINE_COUNT = 6;
+const GRID_LINE_HEIGHT = 17;
+
+let animationStart;
 
 class Graph {
   constructor(container, dataset) {
@@ -26,18 +32,22 @@ class Graph {
     this.DOMElement = tempElement.children[0];
     container.appendChild(this.DOMElement);
 
+    this.svg = this.DOMElement.querySelector('.graph__svg');
+
+    this.hiddenGrid = this.DOMElement.querySelectorAll('.grid')[0];
+    this.visibleGrid = this.DOMElement.querySelectorAll('.grid')[1];
+
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
 
     // Sparklines
-    const { min, max } = this.bounds;
+    const spread = this.spread;
     const sparklinesSVG = this.DOMElement.querySelector('.sparkline__svg');
     this.data = this.data.map(data => {
       const { values, color } = data;
       const sparkline = new Polyline({
         values,
-        min,
-        max,
+        spread,
         color,
         width: 1,
         svgContainer: sparklinesSVG
@@ -89,7 +99,7 @@ class Graph {
     this.data.forEach(({ sparkline, visible }) => {
       if (visible) {
         sparkline.show();
-        sparkline.setBounds(this.bounds);
+        sparkline.setSpread(this.spread);
       } else {
         sparkline.hide();
       }
@@ -97,6 +107,14 @@ class Graph {
   }
   handleSliderChange([start, end]) {
     //console.log(start, end);
+    this.updateFrames([start, end]);
+  }
+  get spread() {
+    const all = [];
+    this.data
+      .filter(({ visible }) => visible)
+      .forEach(({ values }) => all.push(...values));
+    return Math.max(...all);
   }
   get bounds() {
     const all = [];
@@ -108,81 +126,93 @@ class Graph {
       max: Math.max(...all)
     };
   }
-  draw(id, [start, end]) {
-    requestAnimationFrame(now => {
-      const data = this.dataIndex[id];
+  get frameSpread() {
+    const all = [];
+    this.data
+      .filter(({ visible }) => visible)
+      .forEach(({ frame }) => all.push(...frame));
+    return Math.max(...all);
+  }
+  updateFrames([start, end]) {
+    this.data = this.data.map(data => {
+      const { values, sparkline } = data;
 
-      // ex. data
-      const values = data.values;
-
-      // ex. values
-      const sparklinePoints = data.sparkline.points;
-
-      const startIndex = sparklinePoints.findIndex(p => p[0] >= start);
+      // TODO: Maybe ratio from width may work
+      // e.g. start = .25, end .75
+      // take indices: length-1*.25 and length-1*.75
+      const startIndex = sparkline.points.findIndex(p => p[0] >= start);
       const endIndex =
-        sparklinePoints.length -
-        [...sparklinePoints].reverse().findIndex(p => p[0] <= end) -
+        sparkline.points.length -
+        [...sparkline.points].reverse().findIndex(p => p[0] <= end) -
         1;
 
+      const frame = values.slice(startIndex, endIndex);
+      return { ...data, frame };
+    });
+    this.data = this.data.map(data => {
+      const { frame, color } = data;
+      const line = new Polyline({
+        values: frame,
+        spread: this.spread,
+        color,
+        width: 2,
+        svgContainer: this.svg
+      });
+      return { ...data, line };
+    });
+  }
+  drawFrame(frame) {
+    requestAnimationFrame(now => {
       const { width, height } = graph.getBoundingClientRect();
+      const { min, max } = this.frameBounds;
 
-      const frameData = data.slice(startIndex, endIndex);
+      // On spread change
+      if (min !== this.prevMin || max !== this.prevMax) {
+        // Update bounds
+        this.prevMin = min;
+        this.prevMax = max;
+        const newSpread = max - min;
+        this.spreadDiff = newSpread - this.spread;
+        this.spread = newSpread;
 
-      const min = Math.min(...frameData);
-      const max = Math.max(...frameData);
-
-      if (min !== cachedMin || max !== cachedMax) {
-        cachedMin = min;
-        cachedMax = max;
-
-        spread = max - min;
-        spreadDiff = spread - currentSpread;
-
+        // Start line transition
         animationStart = performance.now();
-
         startAnimateY();
 
-        // Grid
-        const GRID_LINE_COUNT = 6;
-        const GIRD_LINE_HEIGHT = 17;
-        const spreadInGrid = spread - (spread * GIRD_LINE_HEIGHT) / height;
+        // Update grid
+        const spreadInGrid =
+          this.spread - (this.spread * GRID_LINE_HEIGHT) / height;
         for (let i = 0; i < GRID_LINE_COUNT; i++) {
           const index = hiddenGrid.children.length - i - 1;
           const line = hiddenGrid.children[index];
           line.textContent = Math.round((spreadInGrid / GRID_LINE_COUNT) * i);
         }
 
-        visibleGrid.classList.add('grid--hidden');
-        visibleGrid.classList.remove('grid--visible');
-        hiddenGrid.classList.remove('grid--hidden');
-        hiddenGrid.classList.add('grid--visible');
-        const temp = visibleGrid;
-        visibleGrid = hiddenGrid;
-        hiddenGrid = temp;
+        this.visibleGrid.classList.add('grid--hidden');
+        this.visibleGrid.classList.remove('grid--visible');
+        this.hiddenGrid.classList.remove('grid--hidden');
+        this.hiddenGrid.classList.add('grid--visible');
+        const temp = this.visibleGrid;
+        this.visibleGrid = this.hiddenGrid;
+        this.hiddenGrid = temp;
       }
 
-      const elapsedTime = now - animationStart;
-      const progress = Math.min(1, elapsedTime / duration);
+      // Lines
+      const progress = Math.min(1, now - animationStart / duration);
+      const currentSpread = this.spread - this.spreadDiff * (1 - progress);
+      this.data.forEach(({ frame, line }) => {
+        // Lines
+        line.setData({ values: frame, spread: currentSpread });
 
-      currentSpread = spread - spreadDiff * (1 - progress);
-
-      const graphPoints = graphData.map((n, index) => {
-        const y = ((n - min) / currentSpread) * height;
-        const x = index * (width / (graphData.length - 1));
-        return [x, y];
-      });
-
-      graphLine.setPoints(graphPoints);
-
-      // Circles
-
-      graphData.forEach((n, index) => {
-        const y = ((n - min) / spread) * height;
-        const x = index * (width / (graphData.length - 1));
-        const group = days[index];
-        group.style.transform = `translateX(${x}px)`;
-        const circle = group.children[1];
-        circle.style.transform = `translateY(${height - y}px)`;
+        // Circles
+        data.forEach((n, index) => {
+          const y = ((n - min) / spread) * height;
+          const x = index * (width / (data.length - 1));
+          const group = days[index];
+          group.style.transform = `translateX(${x}px)`;
+          const circle = group.children[1];
+          circle.style.transform = `translateY(${height - y}px)`;
+        });
       });
 
       // Labels
@@ -191,11 +221,10 @@ class Graph {
       for (const text of textElements) {
         text.removeAttribute('style');
         text.style.opacity = 0;
-        // text.style.transition = 'opacity 1s linear';
       }
 
       // Move visible labels
-      graphPoints.forEach((point, index) => {
+      this.data[0].forEach((point, index) => {
         const text = textElements[startIndex + index];
         text.style.transform = `translateX(${100 + point[0]}px)`;
       });
@@ -217,37 +246,26 @@ class Graph {
       }
 
       visibleLabels.forEach(text => {
-        // text.style.transition = 'opacity 1s linear';
         text.style.opacity = 1;
       });
     });
   }
   startAnimateY() {
-    const { width, height } = graph.getBoundingClientRect();
-
     requestAnimationFrame(animateY);
 
-    function animateY(now) {
-      const min = cachedMin;
-      const max = cachedMax;
+    const animateY = now => {
+      const progress = Math.min(1, (now - animationStart) / duration);
+      currentSpread = this.spread - this.spreadDiff * (1 - progress);
 
-      const elapsedTime = now - animationStart;
-      const progress = Math.min(1, elapsedTime / duration);
-
-      currentSpread = spread - spreadDiff * (1 - progress);
-
-      const graphPoints = graphData.map((n, index) => {
-        const y = ((n - min) / currentSpread) * height;
-        const x = index * (width / (graphData.length - 1));
-        return [x, y];
+      this.data.forEach(({ frame, line }) => {
+        // Lines
+        line.setData({ values: frame, spread: currentSpread });
       });
-
-      graphLine.setPoints(graphPoints);
 
       if (progress < 1) {
         requestAnimationFrame(animateY);
       }
-    }
+    };
   }
 }
 
