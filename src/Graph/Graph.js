@@ -1,5 +1,6 @@
 import './Graph.css';
 import './Grid.css';
+import './Markers.css';
 import template from './Graph.html';
 import Polyline from '../Polyline2/Polyline';
 import Checkbox from '../Checkbox/Checkbox';
@@ -53,6 +54,32 @@ class Graph {
         svgContainer: this.svg
       });
       return { ...data, line };
+    });
+
+    // Markers
+    this.markers = this.labels.map(label => {
+      const group = document.createElementNS(this.svg.namespaceURI, 'g');
+      group.classList.add('marker');
+
+      const line = document.createElementNS(this.svg.namespaceURI, 'line');
+      line.setAttribute('y1', '0');
+      line.setAttribute('y2', '100%');
+      line.classList.add('marker__line');
+      group.appendChild(line);
+
+      this.data.forEach(data => {
+        const circle = document.createElementNS(
+          this.svg.namespaceURI,
+          'circle'
+        );
+        circle.setAttribute('r', '5');
+        circle.classList.add('marker__point');
+        group.appendChild(circle);
+      });
+
+      this.svg.appendChild(group);
+
+      return group;
     });
 
     // Sparklines
@@ -184,9 +211,8 @@ class Graph {
         animationStart = performance.now();
 
         // Update grid
-        /*
         const spreadInGrid =
-          this.frameSpread - (this.spread * GRID_LINE_HEIGHT) / height;
+          this.frameSpread - (this.frameSpread * GRID_LINE_HEIGHT) / height;
         for (let i = 0; i < GRID_LINE_COUNT; i++) {
           const index = this.hiddenGrid.children.length - i - 1;
           const line = this.hiddenGrid.children[index];
@@ -200,24 +226,24 @@ class Graph {
         const temp = this.visibleGrid;
         this.visibleGrid = this.hiddenGrid;
         this.hiddenGrid = temp;
-        */
       }
 
       requestAnimationFrame(this.animateY);
 
-      // this.data
-      //   .filter(({ visible }) => visible)
-      //   .forEach(({ frame, line }) => {
-      //     // Circles
-      //     frame.forEach((n, index) => {
-      //       const y = (n / this.frameSpread) * height;
-      //       const x = index * (width / (frame.length - 1));
-      //       const group = days[index];
-      //       group.style.transform = `translateX(${x}px)`;
-      //       const circle = group.children[1];
-      //       circle.style.transform = `translateY(${height - y}px)`;
-      //     });
-      //   });
+      // Markers
+      this.data
+        .filter(({ visible }) => visible)
+        .forEach(({ frame, color }, columnIndex) => {
+          frame.forEach((n, index) => {
+            const x = index * (width / (frame.length - 1));
+            const y = (n / this.frameSpread) * height;
+            const group = this.markers[index];
+            group.style.transform = `translateX(${x}px)`;
+            const circle = group.children[columnIndex + 1];
+            circle.style.transform = `translateY(${height - y}px)`;
+            circle.style.stroke = color;
+          });
+        });
 
       // Labels
       /*

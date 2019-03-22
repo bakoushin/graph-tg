@@ -1,0 +1,30 @@
+.marker {
+  position: relative;
+  will-change: transform;
+  opacity: 0;
+}
+
+.marker:hover {
+  opacity: 1;
+}
+
+.marker:after {
+  content: '';
+  position: absolute;
+  width: 5px;
+  height: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.marker__line {
+  stroke: #666;
+  stroke-width: 1px;
+}
+
+.marker__point {
+  stroke: black;
+  stroke-width: 2px;
+  fill: white;
+  will-change: transform;
+}
