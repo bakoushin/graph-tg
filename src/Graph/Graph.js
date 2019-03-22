@@ -37,10 +37,14 @@ class Graph {
     this.svg = this.DOMElement.querySelector('.graph__svg');
 
     // -- viewbox
-    this.svg.viewBox.baseVal.height = this.spread;
-    this.svg.viewBox.baseVal.width = 1000; // ratio from slider?
+    // this.svg.viewBox.baseVal.height = this.spread;
+    // this.svg.viewBox.baseVal.width = 1000; // ratio from slider?
 
-    const { width, height } = this.svg.viewBox.baseVal;
+    const width = 1000;
+    const height = this.spread;
+
+    this.svg.setAttribute('viewBox', `0 0 1000 ${height}`);
+    // const { width, height } = this.svg.viewBox.baseVal;
 
     this.data.forEach(({ values, color }) => {
       const points = values.map((n, index) => {
@@ -181,14 +185,46 @@ class Graph {
     });
   }
   handleSliderChange([start, end]) {
-    console.log(start, end);
     const ratio = end - start;
     const svgWidth = this.svg.parentElement.clientWidth / ratio;
     this.svg.style.width = `${svgWidth}px`;
 
     const offset = svgWidth * start;
     this.svg.style.transform = `translateX(${-offset}px)`;
+
+    const lastIndex = this.data[0].values.length - 1;
+    const startIndex = Math.floor(lastIndex * start);
+    const endIndex = Math.ceil(lastIndex * end);
+
+    const newSpread = Math.max(
+      ...this.data
+        .filter(({ visible }) => visible)
+        .map(({ values }) => values.slice(startIndex, endIndex))
+        .map(frame => Math.max(...frame))
+    );
+
+    this.cachedSpread = this.cachedSpread || newSpread;
+    this.currentSpread = this.currentSpread || newSpread;
+
+    if (this.cachedSpread !== newSpread) {
+      this.spreadDiff = newSpread - this.currentSpread;
+      this.cachedSpread = newSpread;
+      animationStart = performance.now();
+      requestAnimationFrame(this.scaleViewBox.bind(this));
+      console.log(newSpread);
+    }
+
     //this.updateFrames([start, end]);
+  }
+  scaleViewBox(now) {
+    const progress = Math.min(1, (now - animationStart) / duration);
+    this.currentSpread = this.cachedSpread - this.spreadDiff * (1 - progress);
+
+    this.svg.viewBox.baseVal.height = this.currentSpread;
+
+    if (progress < 1) {
+      requestAnimationFrame(this.scaleViewBox.bind(this));
+    }
   }
   get spread() {
     const all = [];
