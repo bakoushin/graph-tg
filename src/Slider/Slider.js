@@ -150,7 +150,7 @@ class Slider {
       return;
     }
 
-    this.changeCallback([this.left, this.right]);
+    this.changeCallback([this.left / this.width, this.right / this.width]);
   }
 }
 

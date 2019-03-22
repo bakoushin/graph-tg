@@ -36,6 +36,34 @@ class Graph {
 
     this.svg = this.DOMElement.querySelector('.graph__svg');
 
+    // -- viewbox
+    this.svg.viewBox.baseVal.height = this.spread;
+    this.svg.viewBox.baseVal.width = 1000; // ratio from slider?
+
+    const { width, height } = this.svg.viewBox.baseVal;
+
+    this.data.forEach(({ values, color }) => {
+      const points = values.map((n, index) => {
+        const y = (n / this.spread) * height;
+        const x = index * (width / (values.length - 1));
+        return `${x},${y}`;
+      });
+
+      const polyline = document.createElementNS(
+        this.svg.namespaceURI,
+        'polyline'
+      );
+      polyline.classList.add('polyline');
+      polyline.style.stroke = color;
+      polyline.style.strokeWidth = 2;
+      polyline.setAttribute('vector-effect', 'non-scaling-stroke');
+      polyline.setAttribute('points', points.join(' '));
+
+      this.svg.appendChild(polyline);
+    });
+
+    // -- viewbox
+
     this.hiddenGrid = this.DOMElement.querySelectorAll('.grid')[0];
     this.visibleGrid = this.DOMElement.querySelectorAll('.grid')[1];
 
@@ -45,6 +73,7 @@ class Graph {
     this.drawFrame = this.drawFrame.bind(this);
     this.animateY = this.animateY.bind(this);
 
+    /*
     // Lines
     this.data = this.data.map(data => {
       const { frame, color } = data;
@@ -81,6 +110,7 @@ class Graph {
 
       return group;
     });
+    */
 
     // Sparklines
     const spread = this.spread;
@@ -151,8 +181,14 @@ class Graph {
     });
   }
   handleSliderChange([start, end]) {
-    //console.log(start, end);
-    this.updateFrames([start, end]);
+    console.log(start, end);
+    const ratio = end - start;
+    const svgWidth = this.svg.parentElement.clientWidth / ratio;
+    this.svg.style.width = `${svgWidth}px`;
+
+    const offset = svgWidth * start;
+    this.svg.style.transform = `translateX(${-offset}px)`;
+    //this.updateFrames([start, end]);
   }
   get spread() {
     const all = [];
