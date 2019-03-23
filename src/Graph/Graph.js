@@ -396,7 +396,7 @@ class Graph {
       label.style.transform = `translateX(${100 + x}px)`;
     });
 
-    const LABEL_WIDTH = 100;
+    const LABEL_WIDTH = 80;
     const viewportLabelCount = Math.floor(width / LABEL_WIDTH);
 
     const totalLabelCount = Math.floor(
