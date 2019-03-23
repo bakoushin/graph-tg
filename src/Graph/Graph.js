@@ -9,9 +9,6 @@ import Slider from '../Slider/Slider';
 const GRID_LINE_COUNT = 6;
 const GRID_LINE_HEIGHT = 17;
 
-let animationStart;
-let duration = 150;
-
 class Graph {
   constructor(container, dataset) {
     this.data = [];
@@ -42,7 +39,9 @@ class Graph {
 
     this.svg.setAttribute('viewBox', `0 0 1000 ${height}`);
 
-    this.data.forEach(({ values, color }) => {
+    this.data = this.data.map(data => {
+      const { values, color } = data;
+
       const points = values.map((n, index) => {
         const y = (n / this.spread) * height;
         const x = index * (width / (values.length - 1));
@@ -59,6 +58,7 @@ class Graph {
       polyline.setAttribute('points', points.join(' '));
 
       this.svg.appendChild(polyline);
+      return { ...data, line: polyline };
     });
 
     const points = this.labels.map((n, index) => {
@@ -139,6 +139,10 @@ class Graph {
     if (target.tagName !== 'line') {
       this.clearTooltip();
     } else {
+      if (this.data.filter(({ visible }) => visible).length < 1) {
+        return;
+      }
+
       const index = target.getAttribute('data-index');
       const {
         left: targetLeft,
@@ -161,7 +165,8 @@ class Graph {
       const tooltipHeader = this.marker.querySelector('.tooltip__header');
       const tooltipValues = this.marker.querySelectorAll('.tooltip__value');
 
-      const data = this.data
+      this.data
+        .filter(({ visible }) => visible)
         .map(({ values }) => values[index])
         .forEach((value, index) => {
           const y =
@@ -220,23 +225,25 @@ class Graph {
     items.classList.add('tooltip__items');
     tooltip.appendChild(items);
 
-    this.data.forEach(({ color, title }) => {
-      const dot = document.createElement('div');
-      dot.classList.add('graph__dot');
-      dot.style.borderColor = color;
-      this.marker.appendChild(dot);
+    this.data
+      .filter(({ visible }) => visible)
+      .forEach(({ color, title }) => {
+        const dot = document.createElement('div');
+        dot.classList.add('graph__dot');
+        dot.style.borderColor = color;
+        this.marker.appendChild(dot);
 
-      const item = document.createElement('div');
-      item.classList.add('tooltip__item');
-      item.style.color = color;
-      item.textContent = title;
+        const item = document.createElement('div');
+        item.classList.add('tooltip__item');
+        item.style.color = color;
+        item.textContent = title;
 
-      const value = document.createElement('div');
-      value.classList.add('tooltip__value');
-      item.insertAdjacentElement('afterbegin', value);
+        const value = document.createElement('div');
+        value.classList.add('tooltip__value');
+        item.insertAdjacentElement('afterbegin', value);
 
-      items.appendChild(item);
-    });
+        items.appendChild(item);
+      });
     this.svg.parentElement.appendChild(this.marker);
   }
   clearTooltip() {
@@ -270,17 +277,24 @@ class Graph {
     data.visible = checked;
     this.data.forEach(({ line, sparkline, visible }) => {
       if (visible) {
-        line.show();
-        line.setSpread(this.frameSpread);
+        line.classList.remove('polyline--hidden');
         sparkline.show();
         sparkline.setSpread(this.spread);
       } else {
-        line.hide();
+        line.classList.add('polyline--hidden');
         sparkline.hide();
       }
     });
+    this.updateFrame();
   }
   handleSliderChange([start, end]) {
+    this.frameStart = start;
+    this.frameEnd = end;
+    this.updateFrame();
+  }
+  updateFrame() {
+    const start = this.frameStart;
+    const end = this.frameEnd;
     const ratio = end - start;
     this.svg.viewBox.baseVal.width = 1000 * ratio;
     this.svg.viewBox.baseVal.x = 1000 * start;
@@ -302,41 +316,47 @@ class Graph {
     if (this.cachedSpread !== newSpread) {
       this.spreadDiff = newSpread - this.currentSpread;
       this.cachedSpread = newSpread;
-      animationStart = performance.now();
-      requestAnimationFrame(this.scaleViewBox.bind(this));
 
-      // Update grid
-      const height = this.svg.clientHeight;
-
-      const spreadInGrid =
-        this.cachedSpread - (this.cachedSpread * GRID_LINE_HEIGHT) / height;
-      for (let i = 0; i < GRID_LINE_COUNT; i++) {
-        const index = this.hiddenGrid.children.length - i - 1;
-        const line = this.hiddenGrid.children[index];
-        line.textContent = Math.round(
-          (spreadInGrid / (GRID_LINE_COUNT - 1)) * i
-        );
+      if (newSpread !== -Infinity) {
+        this.scaleGraph();
       }
-
-      this.visibleGrid.classList.add('grid--hidden');
-      this.visibleGrid.classList.remove('grid--visible');
-      this.hiddenGrid.classList.remove('grid--hidden');
-      this.hiddenGrid.classList.add('grid--visible');
-      const temp = this.visibleGrid;
-      this.visibleGrid = this.hiddenGrid;
-      this.hiddenGrid = temp;
+      this.updateGrid();
     }
-    //this.updateFrames([start, end]);
   }
-  scaleViewBox(now) {
-    const progress = Math.min(1, (now - animationStart) / duration);
-    this.currentSpread = this.cachedSpread - this.spreadDiff * (1 - progress);
+  updateGrid() {
+    const height = this.svg.clientHeight;
 
-    this.svg.viewBox.baseVal.height = this.currentSpread;
-
-    if (progress < 1) {
-      requestAnimationFrame(this.scaleViewBox.bind(this));
+    const spreadInGrid =
+      this.cachedSpread - (this.cachedSpread * GRID_LINE_HEIGHT) / height;
+    for (let i = 0; i < GRID_LINE_COUNT; i++) {
+      const index = this.hiddenGrid.children.length - i - 1;
+      const line = this.hiddenGrid.children[index];
+      const value = Math.round((spreadInGrid / (GRID_LINE_COUNT - 1)) * i);
+      line.textContent = Number.isNaN(value) ? '' : value;
     }
+
+    this.visibleGrid.classList.add('grid--hidden');
+    this.visibleGrid.classList.remove('grid--visible');
+    this.hiddenGrid.classList.remove('grid--hidden');
+    this.hiddenGrid.classList.add('grid--visible');
+    const temp = this.visibleGrid;
+    this.visibleGrid = this.hiddenGrid;
+    this.hiddenGrid = temp;
+  }
+  scaleGraph() {
+    const start = performance.now();
+    const duration = 150;
+    const scale = now => {
+      const progress = Math.min(1, (now - start) / duration);
+      this.currentSpread = this.cachedSpread - this.spreadDiff * (1 - progress);
+
+      this.svg.viewBox.baseVal.height = this.currentSpread;
+
+      if (progress < 1) {
+        requestAnimationFrame(scale);
+      }
+    };
+    requestAnimationFrame(scale);
   }
   get spread() {
     const all = [];
