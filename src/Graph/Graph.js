@@ -1,6 +1,6 @@
 import './Graph.css';
 import './Grid.css';
-import './Markers.css';
+import './Tooltip.css';
 import template from './Graph.html';
 import Polyline from '../Polyline2/Polyline';
 import Checkbox from '../Checkbox/Checkbox';
@@ -60,11 +60,38 @@ class Graph {
       polyline.classList.add('polyline');
       polyline.style.stroke = color;
       polyline.style.strokeWidth = 2;
-      polyline.setAttribute('vector-effect', 'non-scaling-stroke');
       polyline.setAttribute('points', points.join(' '));
 
       this.svg.appendChild(polyline);
     });
+
+    const points = this.labels.map((n, index) => {
+      const x = index * (width / (this.labels.length - 1));
+      return x;
+    });
+
+    points.forEach((x, index) => {
+      const line = document.createElementNS(this.svg.namespaceURI, 'line');
+      line.setAttribute('y1', '0');
+      line.setAttribute('y2', '100%');
+      line.setAttribute('x1', x);
+      line.setAttribute('x2', x);
+      line.setAttribute('data-index', index);
+      line.classList.add('graph__catcher-line');
+      this.svg.appendChild(line);
+    });
+
+    this.handlePointerOver = this.handlePointerOver.bind(this);
+    this.handlePointerOut = this.handlePointerOut.bind(this);
+    if (window.PointerEvent) {
+      this.svg.addEventListener('pointerover', this.handlePointerOver);
+      this.svg.addEventListener('pointerout', this.handlePointerOut);
+    } else {
+      this.svg.addEventListener('touchmove', this.handlePointerOver);
+      this.svg.addEventListener('touchend', this.handlePointerOut);
+      this.svg.addEventListener('mouseover', this.handlePointerOver);
+      this.svg.addEventListener('mouseout', this.handlePointerOut);
+    }
 
     // -- viewbox
 
@@ -150,6 +177,121 @@ class Graph {
       });
       return { ...data, checkbox };
     });
+  }
+  handlePointerOver(e) {
+    e.preventDefault();
+    const { clientX, clientY } = e.targetTouches ? e.targetTouches[0] : e;
+    const target = document.elementFromPoint(clientX, clientY);
+    if (target.tagName !== 'line') {
+      this.clearTooltip();
+    } else {
+      const index = target.getAttribute('data-index');
+      const {
+        left: targetLeft,
+        height: targetHeight
+      } = target.getBoundingClientRect();
+      const {
+        left: containerLeft,
+        width: containerWidth
+      } = this.svg.getBoundingClientRect();
+
+      this.initTooltip();
+
+      const dotRadius = parseInt(getComputedStyle(this.marker).width);
+
+      const x = targetLeft - containerLeft - dotRadius / 2;
+      this.marker.style.transform = `translateX(${x}px)`;
+
+      const dots = this.marker.querySelectorAll('.graph__dot');
+      const tooltip = this.marker.querySelector('.tooltip');
+      const tooltipHeader = this.marker.querySelector('.tooltip__header');
+      const tooltipValues = this.marker.querySelectorAll('.tooltip__value');
+
+      const data = this.data
+        .map(({ values }) => values[index])
+        .forEach((value, index) => {
+          const y =
+            targetHeight -
+            (value / this.currentSpread) * targetHeight -
+            dotRadius / 2;
+
+          const dot = dots[index];
+          dot.style.transform = `translateY(${y}px)`;
+
+          const tooltipValue = tooltipValues[index];
+          tooltipValue.textContent = value;
+        });
+
+      const tooltipWidth = tooltip.getBoundingClientRect().width;
+
+      let tooltipOffset = 0;
+      if (x + tooltipWidth / 2 + dotRadius > containerWidth) {
+        tooltipOffset = Math.min(
+          0,
+          containerWidth - (x + tooltipWidth / 2) - dotRadius
+        );
+      }
+      if (x - tooltipWidth / 2 < 0) {
+        tooltipOffset = Math.max(0, tooltipWidth / 2 - x);
+      }
+      tooltip.style.transform = `translateX(${tooltipOffset}px)`;
+
+      const date = new Date(this.labels[index]).toLocaleDateString('en', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric'
+      });
+      tooltipHeader.textContent = date;
+    }
+  }
+  handlePointerOut(e) {
+    this.clearTooltip();
+  }
+  initTooltip() {
+    if (this.marker) {
+      return;
+    }
+    this.marker = document.createElement('div');
+    this.marker.classList.add('graph__marker');
+
+    const tooltip = document.createElement('div');
+    tooltip.classList.add('tooltip');
+    this.marker.appendChild(tooltip);
+
+    const header = document.createElement('h3');
+    header.classList.add('tooltip__header');
+    tooltip.appendChild(header);
+
+    const items = document.createElement('div');
+    items.classList.add('tooltip__items');
+    tooltip.appendChild(items);
+
+    this.data.forEach(({ color, title }) => {
+      const dot = document.createElement('div');
+      dot.classList.add('graph__dot');
+      dot.style.borderColor = color;
+      this.marker.appendChild(dot);
+
+      const item = document.createElement('div');
+      item.classList.add('tooltip__item');
+      item.style.color = color;
+      item.textContent = title;
+
+      const value = document.createElement('div');
+      value.classList.add('tooltip__value');
+      item.insertAdjacentElement('afterbegin', value);
+
+      items.appendChild(item);
+    });
+    this.svg.parentElement.appendChild(this.marker);
+  }
+  clearTooltip() {
+    if (!this.marker) {
+      return;
+    }
+
+    this.marker.remove();
+    this.marker = null;
   }
   get data() {
     return this._data;

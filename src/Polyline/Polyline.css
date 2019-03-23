@@ -4,4 +4,5 @@
   stroke-width: 1;
   transition: opacity 0.3s linear;
   transform: scaleY(-1) translateY(-100%);
+  pointer-events: none;
 }
