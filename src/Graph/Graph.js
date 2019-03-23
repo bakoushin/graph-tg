@@ -10,7 +10,7 @@ const GRID_LINE_COUNT = 6;
 const GRID_LINE_HEIGHT = 17;
 
 let animationStart;
-let duration = 1000;
+let duration = 150;
 
 class Graph {
   constructor(container, dataset) {
@@ -186,11 +186,14 @@ class Graph {
   }
   handleSliderChange([start, end]) {
     const ratio = end - start;
-    const svgWidth = this.svg.parentElement.clientWidth / ratio;
-    this.svg.style.width = `${svgWidth}px`;
+    this.svg.viewBox.baseVal.width = 1000 * ratio;
+    this.svg.viewBox.baseVal.x = 1000 * start;
 
-    const offset = svgWidth * start;
-    this.svg.style.transform = `translateX(${-offset}px)`;
+    // const svgWidth = this.svg.parentElement.clientWidth / ratio;
+    // this.svg.style.width = `${svgWidth}px`;
+
+    // const offset = svgWidth * start;
+    // this.svg.style.transform = `translateX(${-offset}px)`;
 
     const lastIndex = this.data[0].values.length - 1;
     const startIndex = Math.floor(lastIndex * start);

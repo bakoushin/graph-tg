@@ -3,5 +3,4 @@
   stroke: #000;
   stroke-width: 1;
   transition: opacity 0.3s linear;
-  transform: scaleY(-1) translateY(-100%);
 }
