@@ -37,14 +37,10 @@ class Graph {
     this.svg = this.DOMElement.querySelector('.graph__svg');
 
     // -- viewbox
-    // this.svg.viewBox.baseVal.height = this.spread;
-    // this.svg.viewBox.baseVal.width = 1000; // ratio from slider?
-
     const width = 1000;
     const height = this.spread;
 
     this.svg.setAttribute('viewBox', `0 0 1000 ${height}`);
-    // const { width, height } = this.svg.viewBox.baseVal;
 
     this.data.forEach(({ values, color }) => {
       const points = values.map((n, index) => {
@@ -100,48 +96,6 @@ class Graph {
 
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
-
-    this.drawFrame = this.drawFrame.bind(this);
-    this.animateY = this.animateY.bind(this);
-
-    /*
-    // Lines
-    this.data = this.data.map(data => {
-      const { frame, color } = data;
-      const line = new Polyline({
-        color,
-        width: 2,
-        svgContainer: this.svg
-      });
-      return { ...data, line };
-    });
-
-    // Markers
-    this.markers = this.labels.map(label => {
-      const group = document.createElementNS(this.svg.namespaceURI, 'g');
-      group.classList.add('marker');
-
-      const line = document.createElementNS(this.svg.namespaceURI, 'line');
-      line.setAttribute('y1', '0');
-      line.setAttribute('y2', '100%');
-      line.classList.add('marker__line');
-      group.appendChild(line);
-
-      this.data.forEach(data => {
-        const circle = document.createElementNS(
-          this.svg.namespaceURI,
-          'circle'
-        );
-        circle.setAttribute('r', '5');
-        circle.classList.add('marker__point');
-        group.appendChild(circle);
-      });
-
-      this.svg.appendChild(group);
-
-      return group;
-    });
-    */
 
     // Sparklines
     const spread = this.spread;
@@ -331,12 +285,6 @@ class Graph {
     this.svg.viewBox.baseVal.width = 1000 * ratio;
     this.svg.viewBox.baseVal.x = 1000 * start;
 
-    // const svgWidth = this.svg.parentElement.clientWidth / ratio;
-    // this.svg.style.width = `${svgWidth}px`;
-
-    // const offset = svgWidth * start;
-    // this.svg.style.transform = `translateX(${-offset}px)`;
-
     const lastIndex = this.data[0].values.length - 1;
     const startIndex = Math.floor(lastIndex * start);
     const endIndex = Math.ceil(lastIndex * end);
@@ -356,9 +304,28 @@ class Graph {
       this.cachedSpread = newSpread;
       animationStart = performance.now();
       requestAnimationFrame(this.scaleViewBox.bind(this));
-      console.log(newSpread);
-    }
 
+      // Update grid
+      const height = this.svg.clientHeight;
+
+      const spreadInGrid =
+        this.cachedSpread - (this.cachedSpread * GRID_LINE_HEIGHT) / height;
+      for (let i = 0; i < GRID_LINE_COUNT; i++) {
+        const index = this.hiddenGrid.children.length - i - 1;
+        const line = this.hiddenGrid.children[index];
+        line.textContent = Math.round(
+          (spreadInGrid / (GRID_LINE_COUNT - 1)) * i
+        );
+      }
+
+      this.visibleGrid.classList.add('grid--hidden');
+      this.visibleGrid.classList.remove('grid--visible');
+      this.hiddenGrid.classList.remove('grid--hidden');
+      this.hiddenGrid.classList.add('grid--visible');
+      const temp = this.visibleGrid;
+      this.visibleGrid = this.hiddenGrid;
+      this.hiddenGrid = temp;
+    }
     //this.updateFrames([start, end]);
   }
   scaleViewBox(now) {

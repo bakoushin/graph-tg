@@ -10,17 +10,17 @@
 }
 
 .grid__item {
-  color: #f2f4f5;
-  border-bottom: 1px solid #f2f4f5;
+  color: rgba(150, 162, 170, 1);
+  border-bottom: 1px solid rgba(221, 234, 243, 1);
   will-change: contents;
 }
 
 .grid--visible {
-  animation: grid-appear 1s linear forwards;
+  animation: grid-appear 0.15s linear forwards;
 }
 
 .grid--hidden {
-  animation: grid-dissolve 1s linear forwards;
+  animation: grid-dissolve 0.15s linear forwards;
 }
 
 @keyframes grid-dissolve {
