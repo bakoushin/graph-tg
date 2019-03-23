@@ -131,6 +131,9 @@ class Graph {
       });
       return { ...data, checkbox };
     });
+
+    // Init
+    slider.setRange(0.75, 1);
   }
   handlePointerOver(e) {
     e.preventDefault();
@@ -310,7 +313,6 @@ class Graph {
         .map(frame => Math.max(...frame))
     );
 
-    this.cachedSpread = this.cachedSpread || newSpread;
     this.currentSpread = this.currentSpread || newSpread;
 
     if (this.cachedSpread !== newSpread) {

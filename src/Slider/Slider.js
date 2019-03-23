@@ -142,6 +142,11 @@ class Slider {
     this.frameRight.style.transform = `translateX(${value}px)`;
     this.setFrameScale();
   }
+  setRange(start, end) {
+    this.left = this.width * start;
+    this.right = this.width * end;
+    this.handleChange();
+  }
   onChange(callback) {
     this.changeCallback = callback;
   }
