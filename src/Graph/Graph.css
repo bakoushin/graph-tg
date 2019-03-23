@@ -39,6 +39,22 @@
   will-change: transform;
 }
 
+.graph__labels {
+  position: relative;
+  height: 35px;
+  overflow: hidden;
+}
+
+.graph__label {
+  position: absolute;
+  left: -100px;
+  top: 8px;
+  line-height: 1;
+  color: rgba(150, 162, 170, 1);
+  will-change: transform;
+  transition: opacity 0.15s linear;
+}
+
 .sparkline {
   position: relative;
   height: 50px;
@@ -51,4 +67,8 @@
   top: 2px;
   display: block;
   transform: scaleY(-1);
+}
+
+.graph__checkbox-container {
+  margin-top: 18px;
 }

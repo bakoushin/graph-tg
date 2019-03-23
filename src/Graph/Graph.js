@@ -89,6 +89,18 @@ class Graph {
       this.svg.addEventListener('mouseout', this.handlePointerOut);
     }
 
+    const labelContainer = this.DOMElement.querySelector('.graph__labels');
+    this.labelElements = this.labels.map(label => {
+      const element = document.createElement('div');
+      element.classList.add('graph__label');
+      element.textContent = new Date(label).toLocaleDateString('en', {
+        month: 'short',
+        day: 'numeric'
+      });
+      labelContainer.appendChild(element);
+      return element;
+    });
+
     // -- viewbox
 
     this.hiddenGrid = this.DOMElement.querySelectorAll('.grid')[0];
@@ -288,12 +300,17 @@ class Graph {
         sparkline.hide();
       }
     });
-    this.updateFrame();
+    requestAnimationFrame(() => {
+      this.updateFrame();
+    });
   }
   handleSliderChange([start, end]) {
     this.frameStart = start;
     this.frameEnd = end;
-    this.updateFrame();
+    requestAnimationFrame(() => {
+      this.updateFrame();
+      this.updateLabels();
+    });
   }
   updateFrame() {
     const start = this.frameStart;
@@ -303,13 +320,13 @@ class Graph {
     this.svg.viewBox.baseVal.x = 1000 * start;
 
     const lastIndex = this.data[0].values.length - 1;
-    const startIndex = Math.floor(lastIndex * start);
-    const endIndex = Math.ceil(lastIndex * end);
+    this.startIndex = Math.floor(lastIndex * start);
+    this.endIndex = Math.ceil(lastIndex * end);
 
     const newSpread = Math.max(
       ...this.data
         .filter(({ visible }) => visible)
-        .map(({ values }) => values.slice(startIndex, endIndex))
+        .map(({ values }) => values.slice(this.startIndex, this.endIndex))
         .map(frame => Math.max(...frame))
     );
 
@@ -359,6 +376,45 @@ class Graph {
       }
     };
     requestAnimationFrame(scale);
+  }
+  updateLabels() {
+    const width = this.DOMElement.clientWidth;
+
+    // Reset all labels
+    this.labelElements.forEach(element => {
+      element.removeAttribute('style');
+      element.style.opacity = 0;
+    });
+
+    // Move visible labels
+    const frameLabels = this.labelElements.slice(
+      this.startIndex,
+      this.endIndex
+    );
+    frameLabels.forEach((label, index) => {
+      const x = index * (width / (frameLabels.length - 1));
+      label.style.transform = `translateX(${100 + x}px)`;
+    });
+
+    const LABEL_WIDTH = 100;
+    const viewportLabelCount = Math.floor(width / LABEL_WIDTH);
+
+    const totalLabelCount = Math.floor(
+      this.labelElements.length * (viewportLabelCount / frameLabels.length)
+    );
+
+    let visibleLabels = [...this.labelElements];
+    while (visibleLabels.length > totalLabelCount) {
+      const newVisisbleLabels = [];
+      for (let i = 0; i < visibleLabels.length; i += 2) {
+        newVisisbleLabels.push(visibleLabels[i]);
+      }
+      visibleLabels = newVisisbleLabels;
+    }
+
+    visibleLabels.forEach(text => {
+      text.style.opacity = 1;
+    });
   }
   get spread() {
     const all = [];
@@ -452,7 +508,7 @@ class Graph {
         });
 
       // Labels
-      /*
+
       // Reset all labels
       for (const text of textElements) {
         text.removeAttribute('style');
@@ -484,7 +540,6 @@ class Graph {
       visibleLabels.forEach(text => {
         text.style.opacity = 1;
       });
-      */
     });
   }
   animateY(now) {
