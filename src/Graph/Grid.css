@@ -15,6 +15,11 @@
   will-change: contents;
 }
 
+.night .grid__item {
+  color: rgba(79, 98, 115, 1);
+  border-bottom-color: rgba(47, 59, 75, 1);
+}
+
 .grid--visible {
   animation: grid-appear 0.15s linear forwards;
 }

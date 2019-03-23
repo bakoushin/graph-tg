@@ -8,6 +8,12 @@
   z-index: 100;
 }
 
+.night .tooltip {
+  background-color: rgba(37, 50, 65, 1);
+  border-color: rgba(37, 50, 65, 1);
+  box-shadow: 1px 1px 2px 0px rgba(28, 37, 49, 0.5);
+}
+
 .tooltip__header {
   margin: 0;
   padding: 0;

@@ -10,3 +10,9 @@ new Graph(main, dataset[0]);
 
 // TODO:
 // - render graph with empty dataset
+
+// Night mode toggle
+const modeToggle = document.querySelector('.mode');
+modeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('night');
+});

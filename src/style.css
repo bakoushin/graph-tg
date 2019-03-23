@@ -5,8 +5,17 @@
 }
 
 body {
+  margin: 0;
+  padding: 8px;
   font: 14px Arial, Helvetica, sans-serif;
+  color: rgba(0, 0, 0, 1);
   -webkit-font-smoothing: antialiased;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+.night {
+  color: rgba(255, 255, 255, 1);
+  background-color: rgba(36, 47, 62, 1);
 }
 
 h2 {
@@ -15,4 +24,42 @@ h2 {
   font: 18px Arial, Helvetica, sans-serif;
   line-height: 1;
   font-weight: bold;
+}
+
+.mode {
+  margin: 56px 0;
+  text-align: center;
+}
+
+.mode__toggle {
+  font-size: 24px;
+  text-decoration: none;
+}
+
+.mode__toggle--day,
+.mode__toggle--day:link,
+.mode__toggle--day:visited,
+.mode__toggle--day:hover,
+.mode__toggle--day:active {
+  color: rgba(54, 168, 241, 1);
+}
+
+:not(.night) .mode__toggle--day {
+  display: none;
+}
+
+.night .mode__toggle--day {
+  display: initial;
+}
+
+.night .mode__toggle--night {
+  display: none;
+}
+
+.mode__toggle--night,
+.mode__toggle--night:link,
+.mode__toggle--night:visited,
+.mode__toggle--night:hover,
+.mode__toggle--night:active {
+  color: rgba(16, 139, 227, 1);
 }
