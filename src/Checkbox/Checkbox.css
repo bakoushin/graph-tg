@@ -1,6 +1,7 @@
 .checkbox {
   position: relative;
   display: inline-block;
+  margin-right: 16px;
   padding: 12px 16px;
   padding-left: 48px;
   border: 2px solid rgba(233, 238, 242, 1);
@@ -12,6 +13,10 @@
   cursor: pointer;
   /* Remove highlight on tap in iOS Safari */
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.checkbox:last-child {
+  margin-right: 0;
 }
 
 .checkbox__input {
