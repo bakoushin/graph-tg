@@ -3,6 +3,8 @@
   height: 400px;
   transform: scaleY(-1);
   touch-action: none;
+  /* Remove highlight on tap in iOS Safari */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 
 .graph__marker {
