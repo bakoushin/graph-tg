@@ -1,8 +1,8 @@
 import './Graph.css';
 import './Grid.css';
+import './Polyline.css';
 import './Tooltip.css';
 import template from './Graph.html';
-import Polyline from '../Polyline/Polyline';
 import Checkbox from '../Checkbox/Checkbox';
 import Slider from '../Slider/Slider';
 
@@ -39,6 +39,12 @@ class Graph {
     this.svg = this.DOMElement.querySelector('.graph__svg');
     this.svg.setAttribute('viewBox', `0 0 ${this.viewBoxWidth} ${height}`);
 
+    this.sparklinesSVG = this.DOMElement.querySelector('.sparkline__svg');
+    this.sparklinesSVG.setAttribute(
+      'viewBox',
+      `0 0 ${this.viewBoxWidth} ${height}`
+    );
+
     this.data = this.data.map(data => {
       const { values, color } = data;
 
@@ -48,23 +54,33 @@ class Graph {
         return `${x},${y}`;
       });
 
-      const polyline = document.createElementNS(
+      // Graph line
+      const line = document.createElementNS(this.svg.namespaceURI, 'polyline');
+      line.classList.add('polyline');
+      line.style.stroke = color;
+      line.style.strokeWidth = 2;
+      line.setAttribute('points', points.join(' '));
+      this.svg.appendChild(line);
+
+      // Sparkline
+      const sparkline = document.createElementNS(
         this.svg.namespaceURI,
         'polyline'
       );
-      polyline.classList.add('polyline');
-      polyline.style.stroke = color;
-      polyline.style.strokeWidth = 2;
-      polyline.setAttribute('points', points.join(' '));
+      sparkline.classList.add('polyline');
+      sparkline.style.stroke = color;
+      sparkline.style.strokeWidth = 1;
+      sparkline.setAttribute('points', points.join(' '));
+      this.sparklinesSVG.appendChild(sparkline);
 
-      this.svg.appendChild(polyline);
-      return { ...data, line: polyline };
+      return { ...data, line, sparkline };
     });
 
-    const points = this.labels.map((n, index) => {
-      const x = index * (this.viewBoxWidth / (this.labels.length - 1));
-      return x;
-    });
+    // Points
+    const points = [];
+    for (let i = 0; i < this.labels.length; i++) {
+      points.push(i * (this.viewBoxWidth / (this.labels.length - 1)));
+    }
 
     points.forEach((x, index) => {
       const line = document.createElementNS(this.svg.namespaceURI, 'line');
@@ -108,21 +124,6 @@ class Graph {
 
     this.handleCheckboxChange = this.handleCheckboxChange.bind(this);
     this.handleSliderChange = this.handleSliderChange.bind(this);
-
-    // Sparklines
-    const spread = this.spread;
-    const sparklinesSVG = this.DOMElement.querySelector('.sparkline__svg');
-    this.data = this.data.map(data => {
-      const { values, color } = data;
-      const sparkline = new Polyline({
-        values,
-        spread,
-        color,
-        width: 1,
-        svgContainer: sparklinesSVG
-      });
-      return { ...data, sparkline };
-    });
 
     // Slider
     const slider = new Slider(this.DOMElement.querySelector('.slider'));
@@ -299,14 +300,14 @@ class Graph {
     this.data.forEach(({ line, sparkline, visible }) => {
       if (visible) {
         line.classList.remove('polyline--hidden');
-        sparkline.show();
-        sparkline.setSpread(this.spread);
+        sparkline.classList.remove('polyline--hidden');
       } else {
         line.classList.add('polyline--hidden');
-        sparkline.hide();
+        sparkline.classList.add('polyline--hidden');
       }
     });
     requestAnimationFrame(() => {
+      this.scaleSparklines();
       this.updateFrame();
     });
   }
@@ -371,6 +372,22 @@ class Graph {
     const temp = this.visibleGrid;
     this.visibleGrid = this.hiddenGrid;
     this.hiddenGrid = temp;
+  }
+  scaleSparklines() {
+    const start = performance.now();
+    const duration = 150;
+    const diff = this.spread - this.sparklinesSVG.viewBox.baseVal.height;
+    const scale = now => {
+      const progress = Math.min(1, (now - start) / duration);
+
+      this.sparklinesSVG.viewBox.baseVal.height =
+        this.spread - diff * (1 - progress);
+
+      if (progress < 1) {
+        requestAnimationFrame(scale);
+      }
+    };
+    requestAnimationFrame(scale);
   }
   scaleGraph() {
     const start = performance.now();
