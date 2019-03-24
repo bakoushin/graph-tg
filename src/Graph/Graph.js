@@ -220,6 +220,8 @@ class Graph {
       const tooltipHeader = this.marker.querySelector('.tooltip__header');
       const tooltipValues = this.marker.querySelectorAll('.tooltip__value');
 
+      const yValues = [];
+
       this.data
         .filter(({ visible }) => visible)
         .map(({ values }) => values[index])
@@ -229,6 +231,8 @@ class Graph {
             (value / this.currentSpread) * targetHeight -
             dotRadius / 2;
 
+          yValues.push(y);
+
           const dot = dots[index];
           dot.style.transform = `translateY(${y}px)`;
 
@@ -236,26 +240,37 @@ class Graph {
           tooltipValue.textContent = value;
         });
 
-      const tooltipWidth = tooltip.getBoundingClientRect().width;
-
-      let tooltipOffset = 0;
-      if (x + tooltipWidth / 2 + dotRadius > containerWidth) {
-        tooltipOffset = Math.min(
-          0,
-          containerWidth - (x + tooltipWidth / 2) - dotRadius
-        );
-      }
-      if (x - tooltipWidth / 2 < 0) {
-        tooltipOffset = Math.max(0, tooltipWidth / 2 - x);
-      }
-      tooltip.style.transform = `translateX(${tooltipOffset}px)`;
-
       const date = new Date(this.labels[index]).toLocaleDateString('en', {
         weekday: 'short',
         month: 'short',
         day: 'numeric'
       });
       tooltipHeader.textContent = date;
+
+      const {
+        width: tooltipWidth,
+        height: tooltipHeight
+      } = tooltip.getBoundingClientRect();
+
+      let tooltipOffset = 0;
+      if (yValues.filter(y => y <= tooltipHeight).length > 0) {
+        if (x - tooltipWidth < 0) {
+          tooltipOffset = tooltipWidth / 2 + dotRadius;
+        } else {
+          tooltipOffset = -(tooltipWidth / 2 + dotRadius);
+        }
+      } else {
+        if (x + tooltipWidth / 2 + dotRadius > containerWidth) {
+          tooltipOffset = Math.min(
+            0,
+            containerWidth - (x + tooltipWidth / 2) - dotRadius
+          );
+        }
+        if (x - tooltipWidth / 2 < 0) {
+          tooltipOffset = Math.max(0, tooltipWidth / 2 - x);
+        }
+      }
+      tooltip.style.transform = `translateX(${tooltipOffset}px)`;
     }
   }
   handlePointerOut(e) {
