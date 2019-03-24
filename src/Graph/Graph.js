@@ -426,14 +426,14 @@ class Graph {
     if (currentWidth !== newWidth) {
       this.labelContainer.style.width = `${newWidth}px`;
 
-      this.labelElements.forEach(label => (label.style.opacity = 0));
-
       const LABEL_WIDTH = 80;
       const viewportLabelCount = Math.floor(viewportWidth / LABEL_WIDTH);
       const visibleElementsCount = this.endIndex - this.startIndex;
       const totalLabelCount = Math.floor(
         this.labelElements.length * (viewportLabelCount / visibleElementsCount)
       );
+
+      this.labelElements.forEach(label => (label.style.opacity = 0));
 
       let visibleLabels = this.labelElements;
       while (visibleLabels.length > totalLabelCount) {
