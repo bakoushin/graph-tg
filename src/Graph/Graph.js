@@ -2,7 +2,7 @@ import './Graph.css';
 import './Grid.css';
 import './Tooltip.css';
 import template from './Graph.html';
-import Polyline from '../Polyline2/Polyline';
+import Polyline from '../Polyline/Polyline';
 import Checkbox from '../Checkbox/Checkbox';
 import Slider from '../Slider/Slider';
 
