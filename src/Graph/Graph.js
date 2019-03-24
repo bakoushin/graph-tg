@@ -33,18 +33,18 @@ class Graph {
     header.textContent = title;
 
     // Main graph
-    const width = 1000;
+    this.viewBoxWidth = this.labels.length * 10;
     const height = this.spread;
 
     this.svg = this.DOMElement.querySelector('.graph__svg');
-    this.svg.setAttribute('viewBox', `0 0 1000 ${height}`);
+    this.svg.setAttribute('viewBox', `0 0 ${this.viewBoxWidth} ${height}`);
 
     this.data = this.data.map(data => {
       const { values, color } = data;
 
       const points = values.map((n, index) => {
         const y = (n / this.spread) * height;
-        const x = index * (width / (values.length - 1));
+        const x = index * (this.viewBoxWidth / (values.length - 1));
         return `${x},${y}`;
       });
 
@@ -62,7 +62,7 @@ class Graph {
     });
 
     const points = this.labels.map((n, index) => {
-      const x = index * (width / (this.labels.length - 1));
+      const x = index * (this.viewBoxWidth / (this.labels.length - 1));
       return x;
     });
 
@@ -322,8 +322,8 @@ class Graph {
     const start = this.frameStart;
     const end = this.frameEnd;
     const ratio = end - start;
-    this.svg.viewBox.baseVal.width = 1000 * ratio;
-    this.svg.viewBox.baseVal.x = 1000 * start;
+    this.svg.viewBox.baseVal.width = this.viewBoxWidth * ratio;
+    this.svg.viewBox.baseVal.x = this.viewBoxWidth * start;
 
     const lastIndex = this.data[0].values.length - 1;
     this.startIndex = Math.floor(lastIndex * start);
