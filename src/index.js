@@ -3,8 +3,7 @@ import './style.css';
 import dataset from './chart_data.json';
 
 const main = document.getElementById('main');
-// dataset.map((item, index) => new Graph(main, item, `Graph #${index + 1}`));
-new Graph(main, dataset[0], 'Followers');
+dataset.map((item, index) => new Graph(main, item, `Graph #${index + 1}`));
 
 // Night mode toggle
 const modeToggle = document.querySelector('.mode');
