@@ -96,6 +96,11 @@
   top: 2px;
   display: block;
   transform: scaleY(-1);
+  transition: opacity 0.2s linear;
+}
+
+.sparkline__svg--hidden {
+  opacity: 0;
 }
 
 .graph__checkbox-container {

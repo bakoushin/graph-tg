@@ -39,10 +39,8 @@ class Graph {
     this.svg = this.DOMElement.querySelector('.graph__svg');
     this.svg.setAttribute('viewBox', `0 0 ${this.viewBoxWidth} ${height}`);
 
-    this.sparklinesSVG = this.DOMElement.querySelector('.sparkline__svg');
-    this.sparklinesSVG.setAttribute(
-      'viewBox',
-      `0 0 ${this.viewBoxWidth} ${height}`
+    const sparklineContainer = this.DOMElement.querySelector(
+      '.sparkline__container'
     );
 
     this.data = this.data.map(data => {
@@ -63,6 +61,17 @@ class Graph {
       this.svg.appendChild(line);
 
       // Sparkline
+      const sparklineSVG = document.createElementNS(
+        this.svg.namespaceURI,
+        'svg'
+      );
+      sparklineSVG.setAttribute(
+        'viewBox',
+        `0 0 ${this.viewBoxWidth} ${height}`
+      );
+      sparklineSVG.setAttribute('preserveAspectRatio', 'none');
+      sparklineSVG.classList.add('sparkline__svg');
+
       const sparkline = document.createElementNS(
         this.svg.namespaceURI,
         'polyline'
@@ -71,9 +80,11 @@ class Graph {
       sparkline.style.stroke = color;
       sparkline.style.strokeWidth = 1;
       sparkline.setAttribute('points', points.join(' '));
-      this.sparklinesSVG.appendChild(sparkline);
+      sparklineSVG.appendChild(sparkline);
 
-      return { ...data, line, sparkline };
+      sparklineContainer.appendChild(sparklineSVG);
+
+      return { ...data, line, sparkline: sparklineSVG };
     });
 
     // Points
@@ -304,10 +315,10 @@ class Graph {
     this.data.forEach(({ line, sparkline, visible }) => {
       if (visible) {
         line.classList.remove('polyline--hidden');
-        sparkline.classList.remove('polyline--hidden');
+        sparkline.classList.remove('sparkline__svg--hidden');
       } else {
         line.classList.add('polyline--hidden');
-        sparkline.classList.add('polyline--hidden');
+        sparkline.classList.add('sparkline__svg--hidden');
       }
     });
     requestAnimationFrame(() => {
@@ -381,12 +392,19 @@ class Graph {
   scaleSparklines() {
     const start = performance.now();
     const duration = 150;
-    const diff = this.spread - this.sparklinesSVG.viewBox.baseVal.height;
+    const sparklines = this.data
+      .filter(({ visible }) => visible)
+      .map(({ sparkline }) => ({
+        sparkline,
+        diff: this.spread - sparkline.viewBox.baseVal.height
+      }));
+
     const scale = now => {
       const progress = Math.min(1, (now - start) / duration);
 
-      this.sparklinesSVG.viewBox.baseVal.height =
-        this.spread - diff * (1 - progress);
+      sparklines.forEach(({ sparkline, diff }) => {
+        sparkline.viewBox.baseVal.height = this.spread - diff * (1 - progress);
+      });
 
       if (progress < 1) {
         requestAnimationFrame(scale);
