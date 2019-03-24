@@ -89,6 +89,7 @@ class Graph {
       this.svg.addEventListener('mouseout', this.handlePointerOut);
     }
 
+    // Labels
     const labelContainer = this.DOMElement.querySelector('.graph__labels');
     this.labelElements = this.labels.map(label => {
       const element = document.createElement('div');
@@ -101,8 +102,7 @@ class Graph {
       return element;
     });
 
-    // -- viewbox
-
+    // Grid
     this.hiddenGrid = this.DOMElement.querySelectorAll('.grid')[0];
     this.visibleGrid = this.DOMElement.querySelectorAll('.grid')[1];
 
