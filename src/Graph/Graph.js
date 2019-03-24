@@ -106,15 +106,17 @@ class Graph {
     }
 
     // Labels
-    const labelContainer = this.DOMElement.querySelector('.graph__labels');
-    this.labelElements = this.labels.map(label => {
+    this.labelContainer = this.DOMElement.querySelector('.graph__labels');
+    this.labelElements = this.labels.map((timestamp, index) => {
       const element = document.createElement('div');
       element.classList.add('graph__label');
-      element.textContent = new Date(label).toLocaleDateString('en', {
+      element.textContent = new Date(timestamp).toLocaleDateString('en', {
         month: 'short',
         day: 'numeric'
       });
-      labelContainer.appendChild(element);
+      const x = (index * 100) / (this.labels.length - 1);
+      element.style.left = `${x}%`;
+      this.labelContainer.appendChild(element);
       return element;
     });
 
@@ -352,9 +354,10 @@ class Graph {
   updateGrid() {
     const GRID_LINE_COUNT = 6;
 
-    const height = this.svg.clientHeight;
-    const lineHeight = this.DOMElement.querySelector('.grid__item')
-      .clientHeight;
+    const { height } = this.svg.getBoundingClientRect();
+    const { height: lineHeight } = this.DOMElement.querySelector(
+      '.grid__item'
+    ).getBoundingClientRect();
 
     const spreadInGrid =
       this.cachedSpread - (this.cachedSpread * lineHeight) / height;
@@ -405,43 +408,38 @@ class Graph {
     requestAnimationFrame(scale);
   }
   updateLabels() {
-    const width = this.DOMElement.clientWidth;
+    const start = this.frameStart;
+    const end = this.frameEnd;
+    const ratio = end - start;
 
-    // Reset all labels
-    this.labelElements.forEach(element => {
-      element.removeAttribute('style');
-      element.style.opacity = 0;
-    });
+    const viewportWidth = this.DOMElement.clientWidth;
 
-    // Move visible labels
-    const frameLabels = this.labelElements.slice(
-      this.startIndex,
-      this.endIndex
-    );
-    frameLabels.forEach((label, index) => {
-      const x = index * (width / (frameLabels.length - 1));
-      label.style.transform = `translateX(${100 + x}px)`;
-    });
+    const newWidth = Math.round(viewportWidth / ratio);
+    const newOffset = -(newWidth * start);
 
-    const LABEL_WIDTH = 80;
-    const viewportLabelCount = Math.floor(width / LABEL_WIDTH);
+    this.labelContainer.style.transform = `translateX(${newOffset}px)`;
 
-    const totalLabelCount = Math.floor(
-      this.labelElements.length * (viewportLabelCount / frameLabels.length)
-    );
+    const currentWidth = parseFloat(this.labelContainer.style.width);
 
-    let visibleLabels = [...this.labelElements];
-    while (visibleLabels.length > totalLabelCount) {
-      const newVisisbleLabels = [];
-      for (let i = 0; i < visibleLabels.length; i += 2) {
-        newVisisbleLabels.push(visibleLabels[i]);
+    if (currentWidth !== newWidth) {
+      this.labelContainer.style.width = `${newWidth}px`;
+
+      this.labelElements.forEach(label => (label.style.opacity = 0));
+
+      const LABEL_WIDTH = 80;
+      const viewportLabelCount = Math.floor(viewportWidth / LABEL_WIDTH);
+      const visibleElementsCount = this.endIndex - this.startIndex;
+      const totalLabelCount = Math.floor(
+        this.labelElements.length * (viewportLabelCount / visibleElementsCount)
+      );
+
+      let visibleLabels = this.labelElements;
+      while (visibleLabels.length > totalLabelCount) {
+        visibleLabels = visibleLabels.filter((_, index) => index % 2 === 0);
       }
-      visibleLabels = newVisisbleLabels;
-    }
 
-    visibleLabels.forEach(text => {
-      text.style.opacity = 1;
-    });
+      visibleLabels.forEach(label => (label.style.opacity = 1));
+    }
   }
 }
 

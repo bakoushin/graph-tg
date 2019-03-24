@@ -59,10 +59,17 @@
   background-color: rgba(36, 47, 62, 1);
 }
 
-.graph__labels {
+.graph__labels-viewport {
   position: relative;
   height: 35px;
   overflow: hidden;
+}
+
+.graph__labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
 }
 
 .graph__label {
@@ -71,7 +78,6 @@
   top: 8px;
   line-height: 1;
   color: rgba(150, 162, 170, 1);
-  will-change: transform;
   transition: opacity 0.15s linear;
 }
 

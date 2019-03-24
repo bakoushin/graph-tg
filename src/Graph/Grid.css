@@ -8,6 +8,7 @@
   flex-direction: column;
   justify-content: space-between;
   will-change: top;
+  overflow: hidden;
   pointer-events: none;
 }
 
