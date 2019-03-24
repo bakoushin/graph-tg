@@ -1,7 +1,5 @@
 import './Polyline.css';
 
-const TRANSITION_DURATION = 150;
-
 class Polyline {
   constructor({ svgContainer, values, spread, color = '#000', width = 1 }) {
     this.svg = svgContainer;
@@ -65,8 +63,9 @@ class Polyline {
     });
 
     const start = performance.now();
+    const duration = 150;
     const animate = now => {
-      const progress = Math.min(1, (now - start) / TRANSITION_DURATION);
+      const progress = Math.min(1, (now - start) / duration);
       difference.forEach(([x, y], index) => {
         const [prevX, prevY] = prevPoints[index];
         const point = this.polyline.points.getItem(index);

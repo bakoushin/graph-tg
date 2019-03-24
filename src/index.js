@@ -6,7 +6,7 @@ import dataset from './chart_data.json';
 
 const main = document.getElementById('main');
 // const charts = dataset.map(item => new Graph(main, item));
-new Graph(main, dataset[0]);
+new Graph(main, dataset[0], 'Followers');
 
 // TODO:
 // - render graph with empty dataset
