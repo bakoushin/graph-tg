@@ -49,6 +49,7 @@ class Slider {
 
     const pointerId = this.getPointerId(e);
     this.touches[pointerId] = {
+      target: e.target,
       isMoving: true,
       prevPointerPosition: this.getPointerPosition(e)
     };
@@ -89,17 +90,17 @@ class Slider {
     const difference = pointerPosition - currentTouch.prevPointerPosition;
     currentTouch.prevPointerPosition = pointerPosition;
 
-    if (e.target === this.leftControl) {
+    if (currentTouch.target === this.leftControl) {
       requestAnimationFrame(() => {
         this.setLeftPosition(difference);
         this.handleChange();
       });
-    } else if (e.target === this.rightControl) {
+    } else if (currentTouch.target === this.rightControl) {
       requestAnimationFrame(() => {
         this.setRightPosition(difference);
         this.handleChange();
       });
-    } else if (e.target === this.slider) {
+    } else if (currentTouch.target === this.slider) {
       requestAnimationFrame(() => {
         const movingLeft = difference < 0;
         const movingRight = difference > 0;
