@@ -18,7 +18,7 @@ class Slider {
     this.left = this.width * 0.66;
     this.right = this.width;
 
-    this.isMoving = false;
+    this.touches = {};
 
     this.setLeftPosition = this.setLeftPosition.bind(this);
     this.setRightPosition = this.setRightPosition.bind(this);
@@ -44,8 +44,11 @@ class Slider {
   handleInteractionStart(e) {
     e.preventDefault();
 
-    this.isMoving = true;
-    this.prevPointerPosition = this.getPointerPosition(e);
+    const pointerId = this.getPointerId(e);
+    this.touches[pointerId] = {
+      isMoving: true,
+      prevPointerPosition: this.getPointerPosition(e)
+    };
 
     this.width = this.slider.clientWidth;
 
@@ -59,7 +62,8 @@ class Slider {
   handleInteractionEnd(e) {
     e.preventDefault();
 
-    this.isMoving = false;
+    const pointerId = this.getPointerId(e);
+    delete this.touches[pointerId];
 
     if (window.PointerEvent) {
       e.target.releasePointerCapture(e.pointerId);
@@ -69,14 +73,18 @@ class Slider {
     }
   }
   handleInteractionMove(e) {
-    if (!this.isMoving) {
+    const pointerId = this.getPointerId(e);
+
+    if (!this.touches[pointerId]) {
       return;
     }
+
     e.preventDefault();
 
+    const currentTouch = this.touches[pointerId];
     const pointerPosition = this.getPointerPosition(e);
-    const difference = pointerPosition - this.prevPointerPosition;
-    this.prevPointerPosition = pointerPosition;
+    const difference = pointerPosition - currentTouch.prevPointerPosition;
+    currentTouch.prevPointerPosition = pointerPosition;
 
     if (e.target === this.leftControl) {
       requestAnimationFrame(() => {
@@ -104,6 +112,9 @@ class Slider {
         this.handleChange();
       });
     }
+  }
+  getPointerId(e) {
+    return e.targetTouches ? e.targetTouches[0].identifier : e.pointerId;
   }
   getPointerPosition(e) {
     return e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
