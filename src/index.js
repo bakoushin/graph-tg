@@ -16,3 +16,10 @@ const modeToggle = document.querySelector('.mode');
 modeToggle.addEventListener('click', () => {
   document.body.classList.toggle('night');
 });
+
+// Loader
+const loader = document.querySelector('.loader');
+loader.classList.add('loader--hidden');
+setTimeout(() => {
+  loader.style.visibility = 'hidden';
+}, 1000);
