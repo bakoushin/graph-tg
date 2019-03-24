@@ -1,8 +1,12 @@
-# Telegram Contest – Graph (March 2019)
+# Telegram Contest March 2019 – Graph
 
 This simple app renders line graph with fancy transition animations.
 
 It is implemented from scratch using pure JavaScript, without any dependencies.
+
+## Demo
+
+https://bakoushin.github.io/graph-tg
 
 ## Build
 
