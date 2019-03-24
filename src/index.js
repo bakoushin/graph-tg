@@ -1,19 +1,15 @@
 import Graph from './Graph/Graph';
 import './style.css';
-
-// TODO: get dataset from XHR
 import dataset from './chart_data.json';
 
 const main = document.getElementById('main');
-// const charts = dataset.map(item => new Graph(main, item));
+// dataset.map((item, index) => new Graph(main, item, `Graph #${index + 1}`));
 new Graph(main, dataset[0], 'Followers');
-
-// TODO:
-// - render graph with empty dataset
 
 // Night mode toggle
 const modeToggle = document.querySelector('.mode');
-modeToggle.addEventListener('click', () => {
+modeToggle.addEventListener('click', e => {
+  e.preventDefault();
   document.body.classList.toggle('night');
 });
 

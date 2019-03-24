@@ -6,11 +6,11 @@
 
 body {
   margin: 0;
-  padding: 8px;
+  padding: 0;
   font: 14px Arial, Helvetica, sans-serif;
   color: rgba(0, 0, 0, 1);
-  -webkit-font-smoothing: antialiased;
   background-color: rgba(255, 255, 255, 1);
+  -webkit-font-smoothing: antialiased;
 }
 
 .night {
@@ -18,8 +18,13 @@ body {
   background-color: rgba(36, 47, 62, 1);
 }
 
+.wrapper {
+  margin: 0 auto;
+  max-width: 450px;
+}
+
 h2 {
-  margin: 16px 0 4px;
+  margin: 18px 0 32px;
   padding: 0;
   font: 18px Arial, Helvetica, sans-serif;
   line-height: 1;
@@ -27,7 +32,7 @@ h2 {
 }
 
 .mode {
-  margin: 56px 0;
+  padding: 56px 0;
   text-align: center;
 }
 
