@@ -37,9 +37,8 @@
   border-left-color: rgba(59, 74, 90, 1);
 }
 
-.graph__catcher-line {
-  stroke: transparent;
-  stroke-width: 5px;
+.graph__catcher {
+  fill: transparent;
 }
 
 .graph__dot {

@@ -82,15 +82,16 @@ class Graph {
       points.push(i * (this.viewBoxWidth / (this.labels.length - 1)));
     }
 
+    const CATCHER_WIDTH = 6;
     points.forEach((x, index) => {
-      const line = document.createElementNS(this.svg.namespaceURI, 'line');
-      line.setAttribute('y1', '0');
-      line.setAttribute('y2', '100%');
-      line.setAttribute('x1', x);
-      line.setAttribute('x2', x);
-      line.setAttribute('data-index', index);
-      line.classList.add('graph__catcher-line');
-      this.svg.appendChild(line);
+      const rect = document.createElementNS(this.svg.namespaceURI, 'rect');
+      rect.setAttribute('width', CATCHER_WIDTH);
+      rect.setAttribute('height', '100%');
+      rect.setAttribute('x', x - CATCHER_WIDTH / 2);
+      rect.setAttribute('y', 0);
+      rect.setAttribute('data-index', index);
+      rect.classList.add('graph__catcher');
+      this.svg.appendChild(rect);
     });
 
     this.handlePointerOver = this.handlePointerOver.bind(this);
@@ -178,7 +179,7 @@ class Graph {
   handlePointerOver(e) {
     const { clientX, clientY } = e.targetTouches ? e.targetTouches[0] : e;
     const target = document.elementFromPoint(clientX, clientY);
-    if (target.tagName !== 'line') {
+    if (target.tagName !== 'rect') {
       this.clearTooltip();
     } else {
       if (this.data.filter(({ visible }) => visible).length < 1) {
@@ -188,6 +189,7 @@ class Graph {
       const index = target.getAttribute('data-index');
       const {
         left: targetLeft,
+        width: targetWidth,
         height: targetHeight
       } = target.getBoundingClientRect();
       const {
@@ -199,7 +201,7 @@ class Graph {
 
       const dotRadius = parseInt(getComputedStyle(this.marker).width);
 
-      const x = targetLeft - containerLeft - dotRadius / 2;
+      const x = targetLeft + targetWidth / 2 - containerLeft - dotRadius / 2;
       this.marker.style.transform = `translateX(${x}px)`;
 
       const dots = this.marker.querySelectorAll('.graph__dot');
