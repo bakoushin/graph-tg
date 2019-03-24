@@ -148,7 +148,6 @@ class Graph {
     slider.setRange(0.75, 1);
   }
   handlePointerOver(e) {
-    e.preventDefault();
     const { clientX, clientY } = e.targetTouches ? e.targetTouches[0] : e;
     const target = document.elementFromPoint(clientX, clientY);
     if (target.tagName !== 'line') {
