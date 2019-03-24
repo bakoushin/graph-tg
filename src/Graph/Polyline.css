@@ -3,11 +3,10 @@
   stroke: #000;
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
-  transition: all 0.2s linear;
+  transition: opacity 0.2s linear;
   transform-origin: top;
 }
 
 .polyline--hidden {
-  transform: scaleY(2);
   opacity: 0;
 }
