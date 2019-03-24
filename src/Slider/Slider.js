@@ -40,6 +40,9 @@ class Slider {
 
       this.slider.addEventListener('mousedown', this.handleInteractionStart);
     }
+
+    this.handleResize = this.handleResize.bind(this);
+    window.addEventListener('resize', this.handleResize);
   }
   handleInteractionStart(e) {
     e.preventDefault();
@@ -113,6 +116,13 @@ class Slider {
       });
     }
   }
+  handleResize() {
+    this.width = this.slider.clientWidth;
+    requestAnimationFrame(() => {
+      this.left = this.width * this.start;
+      this.right = this.width * this.end;
+    });
+  }
   getPointerId(e) {
     return e.targetTouches ? e.targetTouches[0].identifier : e.pointerId;
   }
@@ -140,6 +150,7 @@ class Slider {
   }
   set left(value) {
     this._left = value;
+    this.start = value / this.width;
     this.leftSide.style.transform = `translateX(${value}px)`;
     this.frameLeft.style.transform = `translateX(${value}px)`;
     this.setFrameScale();
@@ -149,11 +160,15 @@ class Slider {
   }
   set right(value) {
     this._right = value;
+    this.end = value / this.width;
     this.rightSide.style.transform = `translateX(${value}px)`;
     this.frameRight.style.transform = `translateX(${value}px)`;
     this.setFrameScale();
   }
   setRange(start, end) {
+    this.start = start;
+    this.end = end;
+
     this.left = this.width * start;
     this.right = this.width * end;
     this.handleChange();
@@ -166,7 +181,7 @@ class Slider {
       return;
     }
 
-    this.changeCallback([this.left / this.width, this.right / this.width]);
+    this.changeCallback([this.start, this.end]);
   }
 }
 
