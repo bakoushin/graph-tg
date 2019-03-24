@@ -1,5 +1,9 @@
 # Telegram Contest – Graph (March 2019)
 
+This simple app renders line graph with fancy transition animations.
+
+It is implemented from scratch using pure JavaScript, without any dependencies.
+
 ## Build
 
 Production mode: `npm run build` or `yarn build`
